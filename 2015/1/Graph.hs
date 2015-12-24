@@ -38,8 +38,10 @@ dom (G a) = [fst x | x <- a]
 compose :: Graph -> Graph -> Graph
 compose (G []) _ = G []
 compose _ (G []) = G []
-compose (G a) (G b) = G ([(fst x, f2 $ f1 $ fst x) | x <- a]) where
-				f1 = toFun (G a)
+compose (G a) (G b) = if [elem (snd x) dX | x <- a] == [] then G[]
+		else
+		G ([(fst x, f2 $ snd x) | x <- a]) where 
+				dX = dom (G b)
 				f2 = toFun (G b)
   
 -- restrict g l строит сужение графика g на l. Не предполагается,
