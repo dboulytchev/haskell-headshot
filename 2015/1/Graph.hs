@@ -17,7 +17,7 @@ fromFun f m n = G{unG = [(x, f x)| x <- [m..n]]}
 toFun :: Graph -> (Int -> Int)
 toFun G{unG = xs} = (\ x -> f x xs)
      where f x [] = error "Nope"
-	   f x (y:ys) = if x == y then y else f x ys
+	   f x (y:ys) = if x == fst y then snd y else f x ys
 
 -- Графики можно сравнивать на равенство
 instance Eq Graph where
