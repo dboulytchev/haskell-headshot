@@ -11,8 +11,7 @@ newtype Graph = G {unG :: [(Int, Int)]} deriving Show
 -- fromFun f m n строит график функции f в области определения от
 -- m до n включительно c шагом 1.
 fromFun :: (Int -> Int) -> Int -> Int -> Graph
-fromFun f m n = 
-   G (to_list f m n)
+fromFun f m n =  G (to_list f m n)
    
 to_list :: (Int -> Int) -> Int -> Int ->  [(Int, Int)] 
 to_list f m n = 
@@ -26,11 +25,6 @@ toFun (G (list @ (x:xs))) =
   search value (h:t) = 
     if(value == fst h) then snd h
 	else search value t
-   
-toFun1 :: Graph -> (Int -> Int)
-toFun1 g = foldl add (\x -> undefined) (unG g) where
-    add :: (Int -> Int) -> (Int, Int) -> (Int -> Int)
-    add f (x, y) = \z -> if (z == x) then y else f z
 	
 -- Графики можно сравнивать на равенство
 instance Eq Graph where
@@ -49,12 +43,10 @@ dom2 (G l) = foldl (\acc x->  acc ++ [(snd x)]) [] l
 
 -- compose g1 g2 возвращает график суперпозиции функций с графиками
 -- g1 и g2 (сначала применяется g1, потом g2)
-compose :: Graph -> Graph -> Graph
-compose g1 g2 = fromFun ((toFun g1).(toFun g2)) h (get_ends list) where 
-  get_ends (y:ys) = 
-    if(ys == []) then y
-    else get_ends ys                  
-  list@(h:t) = dom g1
+
+compose _ (G []) = G []
+compose g1 g2 =
+     let f = toFun g2 in (G [ (fst x, f (snd x)) | x <- unG g1])
   
 -- restrict g l строит сужение графика g на l. Не предполагается,
 -- что l --- подмножество dom g.
@@ -71,12 +63,8 @@ restrict gr (x:xs) =
 isIncreasing :: Graph -> Bool
 isIncreasing gr =  
   helper (dom2 gr) where 
-    helper [] = True
+    helper (x:[]) = True
     helper (x:xs) = (x <= head xs) && (helper xs)	 
-	
-compose _ (G []) = G []
-compose g1 g2 =
-     let f = toFun g2 in (G [ (fst x, f (snd x)) | x <- unG g1])
 	 
 -- isInjective g == True <=> g --- график инъективной функции
 isInjective :: Graph -> Bool
