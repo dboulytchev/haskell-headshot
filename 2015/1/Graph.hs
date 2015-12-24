@@ -10,43 +10,105 @@ newtype Graph = G {unG :: [(Int, Int)]} deriving Show
 -- fromFun f m n строит график функции f в области определения от
 -- m до n включительно c шагом 1.
 fromFun :: (Int -> Int) -> Int -> Int -> Graph
-fromFun = undefined
+fromFun f m n = G (fromF f m n) where
+    fromF f m n | (m == n)  = [(m, f m)]
+                | otherwise = (m, f m): (fromF f (m - 1) n)  
 
 -- toFun получает график и возвращает функцию. 
 toFun :: Graph -> (Int -> Int)
-toFun = undefined
+toFun (G a) = to a where
+        to (a:as) b = 
+            let (x1, y1) = a
+                in if (x1 == b) then y1 
+                    else to as b
+        to [] b = b        
 
 -- Графики можно сравнивать на равенство
 instance Eq Graph where
-  (==) = undefined
+  (==) (G a) (G b) = compare' a b 1 where
+      compare' [] [] _ = True
+      compare' [] b 0 = True
+      compare' [] b 1 = False
+      compare' a [] 1 = False
+      compare' (a:as) b _ = let res = [x | x <- b, a == x] 
+                              in if length res > 0 then compare' as b 0 else False              
+      
 
 -- Графики упорядочены по теоретико-множественному включению
 instance Ord Graph where
-  (<=) = undefined
+  (<=) (G a) (G b) | length a <= length b = True 
+                   | otherwise = False
 
 -- dom g возвращает область определения графика
 dom :: Graph -> [Int]
-dom = undefined
-
+dom (G []) = []
+dom (G (x:xs)) = quickSort (d (x:xs)) where
+    d [] = []
+    d (x:xs) = let (a, b) = x in b : (d xs)
+quickSort [] = []
+quickSort (h:t) = 
+    quickSort [y | y <- t, y < h] ++ [h] ++ quickSort [y | y <- t, y >= h]          
+    
+    
+    
+    {-[findMin xs min', findMax xs max'] where
+    (a, min') = x 
+    (b, max') = x
+    findMin [] m = m
+    findMin (x:xs) m = let (x', y') = x   
+                        in if (y' < m) then findMin xs y' else findMin xs m    
+    findMax [] m = m    
+    findMax (x:xs) m = let (x', y')  = x 
+                        in if (y' > max') then findMin xs y' else findMin xs m                 
+-}        
 -- compose g1 g2 возвращает график суперпозиции функций с графиками
 -- g1 и g2 (сначала применяется g1, потом g2)
 compose :: Graph -> Graph -> Graph
-compose = undefined
-  
+compose (G as) (G bs) = G (super as bs) where
+    super [] [] = [] 
+    super [] _ = [] 
+    super _ [] = [] 
+    super (a:as) (b:bs) = 
+        let (x1, y1) = a
+            (x2, y2) = b
+            in if (y1 == x2) then (x1, y2) : (super as (b:bs))
+                else super (a:as) bs    
+     
 -- restrict g l строит сужение графика g на l. Не предполагается,
 -- что l --- подмножество dom g.
 restrict :: Graph -> [Int] -> Graph
-restrict = undefined
+restrict (G a) l = G (subset a l) where
+    subset [] [l1, l2] = []
+    subset (a:as) [l1, l2] = 
+        let (x, y) = a
+            in if ((x >= l1) && (x <= l2)) then a:(subset as [l1, l2])
+               else subset as [l1, l2]   
+    subset _ _ = []           
+                   
 
 -- isIncreasing g == True <=> g --- график (нестрого) возрастающей функции
 isIncreasing :: Graph -> Bool
-isIncreasing = undefined
+isIncreasing (G (a:b:bs)) =
+    let (x1, y1) = a
+        (x2, y2) = b
+    in if (x1 <= x2) then isIncreasing (G (b:bs)) else False
+isIncreasing (G [x]) = True
+isIncreasing (G [])  = True    
 
 -- isInjective g == True <=> g --- график инъективной функции
 isInjective :: Graph -> Bool
-isInjective = undefined
+isInjective (G []) = True
+isInjective (G (a:as)) = haveSimilar a as where
+    haveSimilar a [] = True
+    haveSimilar a (x:xs) | (a == x)  = False 
+                         | otherwise = haveSimilar a xs 
 
 -- areMutuallyInverse g1 g2 == True <=> g1 и g2 --- графики взаимно-обратных
 -- функций
 areMutuallyInverse :: Graph -> Graph -> Bool
-areMutuallyInverse = undefined
+areMutuallyInverse (G []) (G []) = True
+areMutuallyInverse (G a) (G (b:bs)) = 
+    let (x, y) = b
+        invertB (b:bs) = (y, x) : invertB bs
+        in (==) (G a) (G (invertB (b:bs)))
+areMutuallyInverse _ _ = False        
