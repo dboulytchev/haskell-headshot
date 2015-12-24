@@ -36,7 +36,8 @@ dom (G a) = [fst x | x <- a]
 -- compose g1 g2 возвращает график суперпозиции функций с графиками
 -- g1 и g2 (сначала применяется g1, потом g2)
 compose :: Graph -> Graph -> Graph
-compose (G []) (G []) = G []
+compose (G []) _ = G []
+compose _ (G []) = G []
 compose (G a) (G b) = G ([(fst x, f2 $ f1 $ fst x) | x <- a]) where
 				f1 = toFun (G a)
 				f2 = toFun (G b)
