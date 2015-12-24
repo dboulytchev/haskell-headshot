@@ -85,10 +85,6 @@ inter (com1 :>>: com2) inp fstate res = do
     res' <- inter com2 inp' fs' out
     return res'
 inter (IF cond com1 com2) inp fstate res = do
-        cur <- temp
-        return cur
-    where
-        temp = do
             evalled <- eval cond fstate 
             if (evalled == 1) then inter com1 inp fstate res else inter com2 inp fstate res
 inter (READ var) (h : t) fstate res = Right ((t, res), (\a -> if (a == var) then Just (C h) else fstate a))
