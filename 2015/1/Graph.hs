@@ -38,7 +38,7 @@ dom g = fst $ unzip $ unG g
 -- g1 и g2 (сначала применяется g1, потом g2)
 compose :: Graph -> Graph -> Graph
 compose _ (G[]) = G []
-compose g1 g2 = G [(fst x, (toFun g2) $ snd x) | x <- unG g1]
+compose g1 g2 = G {unG = [(fst x, snd y) | x <- unG g1, y <- unG g2, snd x == fst y]}
   
 -- restrict g l строит сужение графика g на l. Не предполагается,
 -- что l --- подмножество dom g.
@@ -60,4 +60,4 @@ isInjective g = (length $ snd $ unzip $ unG g) == (length $ nub $ snd $ unzip $ 
 -- areMutuallyInverse g1 g2 == True <=> g1 и g2 --- графики взаимно-обратных
 -- функций
 areMutuallyInverse :: Graph -> Graph -> Bool
-areMutuallyInverse g1 g2 = (unG g1) == [(snd x, fst x) | x <- (unG g2)] 
+areMutuallyInverse g1 g2 = sort ([(snd x, fst x) | x <- (unG g2)]) == sort (unG g1)
