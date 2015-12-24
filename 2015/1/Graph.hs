@@ -41,8 +41,9 @@ dom g = case g of G lst -> map fst lst
 -- compose g1 g2 возвращает график суперпозиции функций с графиками
 -- g1 и g2 (сначала применяется g1, потом g2)
 compose :: Graph -> Graph -> Graph
-compose _ (G []) = G []
-compose g1 g2 = G [(fst x, toFun g2 $ snd x) | x <- unG g1]
+compose g1 g2 = G (map (\(u,v) -> (u, f2 v)) conn)
+                where conn = filter (\(u,v) -> elem v (dom g2)) (unG g1)
+                      f2 = toFun g2
   
 -- restrict g l строит сужение графика g на l. Не предполагается,
 -- что l --- подмножество dom g.
