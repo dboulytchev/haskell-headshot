@@ -35,16 +35,17 @@ dom g = [x | (x, _) <- unG g]
 -- compose g1 g2 возвращает график суперпозиции функций с графиками
 -- g1 и g2 (сначала применяется g1, потом g2)
 compose :: Graph -> Graph -> Graph
-compose (G g1) (G g2) = if (check g1y g2x) then G res else G []
+compose (G g1) (G g2) = G res
+--if (check g1y g2x) then G res else G []
     where
         findByX :: Int -> [(Int, Int)] -> Int
         findByX x (h@(x1, y1) : t) = if (x == x1) then y1 else (findByX x t)
         findByX _ [] = error "Such x doesn't belong to the graph"
-        res :: [(Int, Int)]
-        res = [(x1, findByX y1 g2) | (x1, y1) <- g1]
+        res = [(x1, findByX y1 g2) | (x1, y1) <- g1']
         check y1s x2s = foldl (&&) True [y `elem` x2s | y <- y1s]
         g1y = snd (unzip g1)
         g2x = fst (unzip g2)
+        g1' = filter (\(x, y) -> y `elem` g2x) g1
 
   
 -- restrict g l строит сужение графика g на l. Не предполагается,
