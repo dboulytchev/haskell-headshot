@@ -1,5 +1,7 @@
 module While where
 
+import qualified Data.Map as M
+
 infixl 7 :*:, :/:, :%:
 infixl 6 :+:, :-:
 infix  5 :=:, :/=:, :<:, :>:
@@ -64,10 +66,115 @@ fact = READ "n" :>>:
 -- Например: 
 --  int fact [5] => Right 120
 --  int fact []  => Left "empty input"
+type Value = Int
+type Error = String
+
+evalExpr :: M.Map String [Value] -> E -> Either Error [Value]
+evalExpr _ (C c) = Right [c]
+evalExpr env (X s) = case M.lookup s env of
+    Nothing -> Left "Unassigned variable"
+    Just x -> Right x
+
+
+evalExpr env (e1 :+: e2) = eval (+) left right
+  where
+    left = evalExpr env e1
+    right = evalExpr env e2 
+evalExpr env (e1 :-: e2) = eval (-) left right
+  where
+    left = evalExpr env e1
+    right = evalExpr env e2 
+evalExpr env (e1 :*: e2) = eval (*) left right
+  where
+    left = evalExpr env e1
+    right = evalExpr env e2 
+evalExpr env (e1 :/: e2) = eval div left right
+  where
+    left = evalExpr env e1
+    right = evalExpr env e2 
+evalExpr env (e1 :%: e2) = eval mod left right
+  where
+    left = evalExpr env e1
+    right = evalExpr env e2 
+evalExpr env (e1 :=: e2) = eval (\x y -> if x == y then 1 else 0) left right
+  where
+    left = evalExpr env e1
+    right = evalExpr env e2 
+evalExpr env (e1 :/=: e2) = eval (\x y -> if x /= y then 1 else 0) left right
+  where
+    left = evalExpr env e1
+    right = evalExpr env e2 
+evalExpr env (e1 :<: e2) = eval (\x y -> if x < y then 1 else 0) left right
+  where
+    left = evalExpr env e1
+    right = evalExpr env e2 
+evalExpr env (e1 :>: e2) = eval (\x y -> if x > y then 1 else 0) left right
+  where
+    left = evalExpr env e1
+    right = evalExpr env e2 
+evalExpr env (e1 :/\: e2) = eval (*) left right
+  where
+    left = evalExpr env e1
+    right = evalExpr env e2 
+evalExpr env (e1 :\/: e2) = eval (\x y -> 1-(1-x)*(1-y)) left right
+  where
+    left = evalExpr env e1
+    right = evalExpr env e2 
+
+eval _ (Left x) _  = Left x
+eval _ _ (Left x)  = Left x
+eval x (Right (i1:_)) (Right (i2:_)) = Right $ [x i1 i2]
+
+-- evalStatement принимает текущее значение переменных и statement и возвращает новое значение переменных после его выполнения.
+evalStatement :: M.Map String [Value] -> S -> Either Error (M.Map String [Value])
+evalStatement env (var ::=: e) = 
+  case evalExpr env e of 
+    Left errs -> Left errs                                          
+    Right val -> Right $ M.insert var val env
+        
+evalStatement env (WHILE e s) = 
+  case evalExpr env e of 
+    Left errs -> Left errs
+    Right [0] -> Right env
+    Right [1] -> 
+      case (evalStatement env s) of
+        Left errs -> Left errs
+        Right env' -> evalStatement env' (WHILE e s)              
+    Right _ -> Left "Types Error"
+
+
+evalStatement env SKIP = Right env
+
+evalStatement env (READ sym) = case unjust $ M.lookup "Input" env of
+    [] -> Left "Empty input"
+    (x:xs) -> Right $ M.insert sym [x] $ M.adjust (\(x:xs) -> xs) "Input" env
+
+evalStatement env (WRITE e) = case evalExpr env e of
+    Left err -> Left err
+    Right x -> Right $ M.adjust (\y -> y ++ x) "Output" env
+
+evalStatement env (s :>>: xs) =
+  case evalStatement env s of 
+    Left errs -> Left errs
+    Right env' -> evalStatement env' xs
+
+
 int :: S -> [Int] -> Either String [Int] 
-int = undefined
+int program inp = case evalStatement state program of 
+        Left x -> Left x
+        Right s -> Right $ unjust $ M.lookup "Output" s
+    where state = M.insert "Output" [] $ M.insert "Input" inp M.empty
+
+unjust (Just x) = x
 
 -- Написать на While проверку простоты числа isPrime. Например,
 --   int isPrime [5] => Right 1
 --   int isPrime [8] => Right 0
-isPrime = undefined
+isPrime = READ "n" :>>:
+       "p" ::=: C 1 :>>:
+       "tmp" ::=: X "n" :-: C 1 :>>:
+       WHILE (X "tmp" :>: C 1) 
+         ("p" ::=: X "p" :/\: X "n" :%: X "tmp" :/=: C 0 :>>:
+          "tmp" ::=: X "tmp" :-: C 1 
+         ) :>>:
+       WRITE (X "p")
