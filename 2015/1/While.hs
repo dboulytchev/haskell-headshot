@@ -1,5 +1,7 @@
 module While where
 
+import Control.Monad
+
 infixl 7 :*:, :/:, :%:
 infixl 6 :+:, :-:
 infix  5 :=:, :/=:, :<:, :>:
@@ -64,10 +66,145 @@ fact = READ "n" :>>:
 -- Например: 
 --  int fact [5] => Right 120
 --  int fact []  => Left "empty input"
-int :: S -> [Int] -> Either String [Int] 
-int = undefined
+int :: S -> [Int] -> Either String [Int]
+int prog inp = 
+    case interpret (make prog) (\_ -> Nothing) inp [] of
+        Left error           -> Left error
+        Right (_, _, _, out) -> Right out
+
+
+type State = (String -> Maybe Int)
+
+data Interpreter a = 
+    Interpreter { interpret :: State -> [Int] -> [Int] -> Either String (a, State, [Int], [Int]) }
+
+instance Functor Interpreter where
+    fmap = liftM
+
+instance Applicative Interpreter where
+    pure x = Interpreter (\y inp out -> Right (x, y, inp, out))
+    (<*>) = ap
+
+instance Monad Interpreter where
+    return = pure
+    v >>= op = Interpreter $ \y inp out -> 
+        case (interpret v y inp out) of
+            Left str -> Left str
+            Right (x, y', inp', out') -> interpret (op x) y' inp' out'
+
+-- вычисляет значение из source и присваивает его в dest 
+write :: String -> E -> Interpreter ()
+write dest source = do 
+    temp <- eval source
+    Interpreter $ \y inp out -> 
+        Right ((), \n -> 
+            if n == dest then Just temp else y n, inp, out)
+
+-- читает из входного потока
+input :: Interpreter Int
+input = Interpreter $ \y inp out -> 
+    case inp of
+        [] -> Left "Empty stream"
+        (x:xs) -> Right (x, y, xs, out)
+
+-- добавляет значение в выходной поток
+output :: Int -> Interpreter ()
+output x = Interpreter (\y inp out -> Right ((), y, inp, x:out))
+
+-- выполняет команду языка
+make :: S -> Interpreter ()
+make SKIP = return ()
+make (l ::=: r) = do write l r
+make (READ n) = do 
+    temp <- input
+    write n (C temp)
+make (WRITE expr) = do 
+    temp <- eval expr
+    output temp
+make (s1 :>>: s2) = do 
+    make s1
+    make s2
+make (IF expr s1 s2) = do 
+    temp <- eval expr
+    case temp of 
+        1 -> make s1
+        0 -> make s2
+        otherwise -> undefined
+make (WHILE expr s) = do 
+    temp <- eval expr
+    case temp of 
+        1 -> make s >> make (WHILE expr s)
+        0 -> return ()
+        otherwise -> undefined
+
+
+-- находит значение переменной
+find :: String -> Interpreter Int
+find x = Interpreter $ \y inp out -> 
+    case y x of
+        Nothing    -> Left "Incorect variable"
+        Just value -> Right (value, y, inp, out)
+
+boolToInt expr = if expr then 1 else 0
+
+-- вычисляет значение выражения
+eval :: E -> Interpreter Int
+eval (X n) = do find n
+eval (C x) = do return x
+eval (l :+: r) = do 
+    tempL <- eval l
+    tempR <- eval r
+    return (tempL + tempR)
+eval (l :-: r) = do 
+    tempL <- eval l
+    tempR <- eval r
+    return (tempL - tempR)
+eval (l :*: r) = do 
+    tempL <- eval l
+    tempR <- eval r
+    return (tempL * tempR)
+eval (l :/: r) = do 
+    tempL <- eval l
+    tempR <- eval r
+    return (tempL `div` tempR)
+eval (l :%: r) = do 
+    tempL <- eval l
+    tempR <- eval r
+    return (tempL `rem` tempR)
+eval (l :=: r) = do
+    tempL <- eval l
+    tempR <- eval r
+    return (boolToInt (tempL == tempR))
+eval (l :/=: r) = do 
+    tempL <- eval l
+    tempR <- eval r
+    return (boolToInt (tempL /= tempR))
+eval (l :<: r) = do 
+    tempL <- eval l
+    tempR <- eval r
+    return (boolToInt (tempL < tempR))
+eval (l :>: r) = do 
+    tempL <- eval l
+    tempR <- eval r
+    return (boolToInt (tempL > tempR))
+eval (l :/\: r) = do 
+    tempL <- eval l
+    tempR <- eval r
+    return $ if ((tempL `rem` 2) * (tempR `rem` 2) > 0) then 1 else 0
+eval (l :\/: r) = do 
+    tempL <- eval l
+    tempR <- eval r
+    return $ if ((tempL `rem` 2) + (tempR `rem` 2) > 0) then 1 else 0
 
 -- Написать на While проверку простоты числа isPrime. Например,
 --   int isPrime [5] => Right 1
 --   int isPrime [8] => Right 0
-isPrime = undefined
+isPrime =
+    READ "x" :>>:
+    "temp" ::=: C 2 :>>:
+    "result" ::=: C 1 :>>:
+    WHILE (X "temp" :<: X "x") (
+        IF (X "x" :%: X "temp" :=: C 0) ("result" ::=: C 0) SKIP :>>:
+        "temp" ::=: (X "temp" :+: C 1)
+    ) :>>:
+    WRITE (X "result")
