@@ -53,8 +53,8 @@ isIncreasing (G a) = listY == sort listY where listY = [snd x | x <- sort a]
 
 -- isInjective g == True <=> g --- график инъективной функции
 isInjective :: Graph -> Bool
-isInjective (G a) = length a == length chkList where 
-						chkList = nub a
+isInjective (G a) = length (nub chkList) == length chkList where 
+						chkList = [snd x | x <- a]
 
 -- areMutuallyInverse g1 g2 == True <=> g1 и g2 --- графики взаимно-обратных
 -- функций
