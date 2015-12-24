@@ -16,8 +16,9 @@ fromFun f m n = G { unG = [ (x, f x) | x <- [m..n] ] }
 
 -- toFun получает график и возвращает функцию. 
 toFun :: Graph -> (Int -> Int)
-toFun = undefined
-
+toFun graph = \y -> f y (unG graph) where
+  f a (x:xs) = if a == fst x then snd x else f a xs
+  
 -- Графики можно сравнивать на равенство
 instance Eq Graph where
   (==) a b = unG a == unG b
