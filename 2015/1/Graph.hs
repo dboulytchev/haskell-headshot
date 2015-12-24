@@ -71,11 +71,13 @@ restrict gr (x:xs) =
 isIncreasing :: Graph -> Bool
 isIncreasing gr =  
   helper (dom2 gr) where 
-    helper (x:xs) =
-     if(xs == []) then True 
-     else (x <= head xs) && (helper xs)	 
+    helper [] = True
+    helper (x:xs) = (x <= head xs) && (helper xs)	 
 	
-	
+compose _ (G []) = G []
+compose g1 g2 =
+     let f = toFun g2 in (G [ (fst x, f (snd x)) | x <- unG g1])
+	 
 -- isInjective g == True <=> g --- график инъективной функции
 isInjective :: Graph -> Bool
 isInjective gr = 
@@ -86,4 +88,4 @@ isInjective gr =
 -- areMutuallyInverse g1 g2 == True <=> g1 и g2 --- графики взаимно-обратных
 -- функций
 areMutuallyInverse :: Graph -> Graph -> Bool
-areMutuallyInverse = undefined
+areMutuallyInverse g1 g2 =  [ (snd x, fst x) | x <- (unG g2)] == (unG g1)
