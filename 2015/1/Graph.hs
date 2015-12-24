@@ -26,7 +26,8 @@ instance Eq Graph where
 
 -- Графики упорядочены по теоретико-множественному включению
 instance Ord Graph where
-  (<=) g1 g2 = undefined 
+  (<=) g1 g2 = (head answ && length answ == 1) where 
+	answ = nub [elem x $ unG g) | x <- unG g1)]
 
 -- dom g возвращает область определения графика
 dom :: Graph -> [Int]
