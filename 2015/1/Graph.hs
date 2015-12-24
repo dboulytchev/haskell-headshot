@@ -50,7 +50,7 @@ isIncreasing G{unG = xs} = notElem False $ [ snd x <= snd y | x <- xs, y <- xs, 
 
 -- isInjective g == True <=> g --- график инъективной функции
 isInjective :: Graph -> Bool
-isInjective G{unG = xs} = notElem False $ [ snd x == snd y | x <- xs, y <- xs, fst x == fst y]
+isInjective G{unG = xs} = notElem False $ [ snd x == snd y | x <- xs, y <- xs, fst x /= fst y]
 
 -- areMutuallyInverse g1 g2 == True <=> g1 и g2 --- графики взаимно-обратных
 -- функций
