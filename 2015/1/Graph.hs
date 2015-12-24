@@ -15,12 +15,6 @@ fromFun f m n = G {unG = [(x, f x) | x <- [m..n]]}
 
 -- toFun получает график и возвращает функцию. 
 toFun :: Graph -> (Int -> Int)
-toFun' g =
-     (\y -> find y (unG g)) where 
-         find v (x:xs) = case (v == fst x) of
-             True  -> snd x
-             False -> find v xs
-
 toFun g = (\x -> f x unG g)
 	where f x (y:ys) = x
 		| x == y = y
@@ -32,7 +26,7 @@ instance Eq Graph where
 
 -- Графики упорядочены по теоретико-множественному включению
 instance Ord Graph where
-  (<=) = undefined
+  (<=) g1 g2 = undefined 
 
 -- dom g возвращает область определения графика
 dom :: Graph -> [Int]
