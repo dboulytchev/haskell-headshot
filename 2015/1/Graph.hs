@@ -76,5 +76,4 @@ isInjective g = length ys == (length (nub ys))
 areMutuallyInverse :: Graph -> Graph -> Bool
 areMutuallyInverse (G g1) (G g2) = sort g1 == (sort (swap' g2))
     where
-        swap' ((x, y) : t) = (y, x) : (swap' t)
-        swap' [] = []
+        swap' = map (\(x, y) -> (y, x))
