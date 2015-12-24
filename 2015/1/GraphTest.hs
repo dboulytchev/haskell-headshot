@@ -122,8 +122,8 @@ main = do
             ys <- distinct 10
             zs <- distinct 10
             let g1    = G $ zip xs ys
-            let g2    = G $ zip ys zs
-            let g     = G $ zip xs zs
+            let g2    = G $ zip (take 5 ys) zs
+            let g     = G $ zip xs (take 5 zs)
             let empty = G [] 
             if g == compose g1 g2 then putStrLn "  passed"
                                   else error $ "Failed: compose " ++ show g1 ++ " with " ++ show g2 ++ " /= " ++ show g
