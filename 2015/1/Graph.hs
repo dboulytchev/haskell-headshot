@@ -1,6 +1,8 @@
 module Graph where
 
 import Data.List
+import System.Random
+import Data.List
 
 -- График целочисленной функции f --- это список пар (x, y), такой, что 
 -- f (x) = y <=> пара (x, y) входит в этот список. Гарантируется, что
@@ -18,6 +20,8 @@ to_list :: (Int -> Int) -> Int -> Int ->  [(Int, Int)]
 to_list f m n = 
   if (m==n) then [(m, f m)] 
   else [(m, f m)] ++ (to_list f (m+1) n) 
+  
+  
   
 -- toFun получает график и возвращает функцию. 
 toFun :: Graph -> (Int -> Int)
@@ -48,7 +52,10 @@ dom2 (G l) = foldl (\acc x->  acc ++ [(snd x)]) [] l
 
 compose _ (G []) = G []
 compose g1 g2 =
-     let f = toFun g2 in (G [ (fst x, f (snd x)) | x <- unG g1])
+       (G [ (fst x, f (snd x)) | x <- unG g1, elem (snd x) dom1]) where 
+	   f = toFun g2  
+	   dom1 = dom g2
+  
   
 -- restrict g l строит сужение графика g на l. Не предполагается,
 -- что l --- подмножество dom g.
