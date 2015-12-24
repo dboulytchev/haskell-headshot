@@ -70,4 +70,12 @@ int = undefined
 -- Написать на While проверку простоты числа isPrime. Например,
 --   int isPrime [5] => Right 1
 --   int isPrime [8] => Right 0
-isPrime = undefined
+isPrime = READ "n" :>>:
+	"res" ::=: C 1 :>>:
+	"i" ::=: C 2 :>>:
+	WHILE (X "i" :*: X "i" :<: X "n") (
+		if (X "n" :%: X "i" :=: C 0) ("res" ::=: C 0) ("res" ::=: X "res") :>>:
+		"i" ::=: X "i" :+: C 1
+	) :>>:
+	if (X "i" :*: X "i" :=: X "n") ("res" ::=: C 0) ("res" ::=: X "res") :>>:
+	WRITE (X "res")
