@@ -120,11 +120,16 @@ main = do
             xs <- distinct 10
             ys <- distinct 10
             zs <- distinct 10
-            let g1 = G $ zip xs ys
-            let g2 = G $ zip ys zs
-            let g  = G $ zip xs zs
+            let g1    = G $ zip xs ys
+            let g2    = G $ zip ys zs
+            let g     = G $ zip xs zs
+            let empty = G [] 
             if g == compose g1 g2 then putStrLn "  passed"
                                   else error $ "Failed: compose " ++ show g1 ++ " with " ++ show g2 ++ " /= " ++ show g
+            if empty == compose g1 empty then putStrLn "  passed"
+                                   else error $ "Failed: compose " ++ show g1 ++ " with " ++ show empty ++ " /= " ++ show empty
+            if empty == compose empty g2 then putStrLn "  passed"
+                                         else error $ "Failed: compose " ++ show empty ++ " with " ++ show g2 ++ " /= " ++ show empty
          )
 
   putStrLn "Testing restrict/==..."
