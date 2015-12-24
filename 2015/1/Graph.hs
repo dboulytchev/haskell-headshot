@@ -12,7 +12,7 @@ newtype Graph = G {unG :: [(Int, Int)]} deriving Show
 -- fromFun f m n строит график функции f в области определения от
 -- m до n включительно c шагом 1.
 fromFun :: (Int -> Int) -> Int -> Int -> Graph
-fromFun f m n = G [ (x, f(x)) | x <- [m..n] ]
+fromFun f m n = G [ (x, f x) | x <- [m..n] ]
 
 -- toFun получает график и возвращает функцию. 
 toFun :: Graph -> (Int -> Int)
@@ -30,7 +30,7 @@ instance Eq Graph where
 instance Ord Graph where
   (<=) (G []) (G []) = True
   (<=) f g = 
-      let res = nub [ elem x (unG g) | x <- (unG f)] in (length res == 1 && head res) 
+      let res = nub [ elem x (unG g) | x <- (unG f)] in (length res == 1 && head res)
 
 -- dom g возвращает область определения графика
 dom :: Graph -> [Int]
@@ -40,6 +40,7 @@ dom f = [ fst x | x <- (unG f)]
 -- g1 и g2 (сначала применяется g1, потом g2)
 compose :: Graph -> Graph -> Graph
 compose _ (G []) = G []
+compose (G []) _ = G []
 compose g1 g2 =
     let f = toFun g2 in (G [ (fst x, f (snd x)) | x <- unG g1])
 
