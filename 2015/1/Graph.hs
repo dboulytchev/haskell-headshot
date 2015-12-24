@@ -19,7 +19,7 @@ fromFun f m n
 -- toFun получает график и возвращает функцию. 
 toFun :: Graph -> (Int -> Int)
 toFun (G g) = \x -> f g x
-  where f [] a = error "Function undefined"
+  where --f [] a = error "Function undefined"
         f ((x, y) : xs) a = if ( x == a) then y else f xs a
   -- Графики можно сравнивать на равенство
 instance Eq Graph where
@@ -28,7 +28,7 @@ instance Eq Graph where
 -- Графики упорядочены по теоретико-множественному включению
 instance Ord Graph where
   (<=) (G []) (G b) = True
-  (<=) (G (x : xs)) (G b) = (x `elem`b) && (xs <= b)
+  (<=) (G (x : xs)) bb@(G b) = (x `elem` b) && ((G xs) <= bb)
 
 -- dom g возвращает область определения графика
 dom :: Graph -> [Int]
@@ -74,4 +74,7 @@ isInjective (G ((x, y) : xs))= (isOne y xs) && ( isInjective (G xs))
 -- areMutuallyInverse g1 g2 == True <=> g1 и g2 --- графики взаимно-обратных
 -- функций
 areMutuallyInverse :: Graph -> Graph -> Bool
-areMutuallyInverse g1 g2 = (compose g1 g2) == (compose g2 g1)
+areMutuallyInverse g1 g2 = check g
+     where G g =  compose g1 g2
+           check [] = True
+           check ((x, y) : xs) = (x == y) && (check xs)
