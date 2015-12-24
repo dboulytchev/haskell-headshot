@@ -1,4 +1,4 @@
-module Graph
+module Graph where
 
 import Data.List
 -- График целочисленной функции f --- это список пар (x, y), такой, что 
