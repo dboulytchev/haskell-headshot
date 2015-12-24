@@ -83,7 +83,7 @@ isIncreasing (G [])  = True
 isInjective :: Graph -> Bool
 isInjective (G []) = True
 isInjective (G a) = 
-    let res = [(x, y) | (x, y) <- a, (x', y') <- a, x' == x, y' /= y] in
+    let res = [(x, y) | (x, y) <- a, (x', y') <- a, x' /= x, y' == y] in
         if length res > 0 then False else True
 
 -- areMutuallyInverse g1 g2 == True <=> g1 и g2 --- графики взаимно-обратных
