@@ -21,7 +21,7 @@ toFun graph = \y -> f y (unG graph) where
   
 -- Графики можно сравнивать на равенство
 instance Eq Graph where
-  (==) a b = unG a == unG b
+  (==) a b = sort (unG a) == sort (unG b)
 
 -- Графики упорядочены по теоретико-множественному включению
 instance Ord Graph where
