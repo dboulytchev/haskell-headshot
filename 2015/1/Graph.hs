@@ -1,52 +1,73 @@
 module Graph where
 
--- График целочисленной функции f --- это список пар (x, y), такой, что 
--- f (x) = y <=> пара (x, y) входит в этот список. Гарантируется, что
--- в списке нет двух пар с одинаковыми первыми компонентами; никаких
--- предположений о порядке следования пар в списке не делается. 
--- Далее везде считается, что все графики конечны.
+import Data.List
+import System.Random
+
 newtype Graph = G {unG :: [(Int, Int)]} deriving Show
 
--- fromFun f m n строит график функции f в области определения от
--- m до n включительно c шагом 1.
 fromFun :: (Int -> Int) -> Int -> Int -> Graph
-fromFun = undefined
+fromFun f m n = G [(x, f x) | x <- [m..n]]
 
--- toFun получает график и возвращает функцию. 
+findFx x = find (\(e1, e2) -> e1 == x)
+
 toFun :: Graph -> (Int -> Int)
-toFun = undefined
+toFun (G g) = (\x -> case find (\(e1, e2) -> e1 == x) g of
+						Just (x1, x2) -> x2)
+					
+minX (G g) =  minimum [x | (x, y) <- g]
+maxX (G g) = maximum [x | (x, y) <- g]
 
--- Графики можно сравнивать на равенство
-instance Eq Graph where
-  (==) = undefined
-
--- Графики упорядочены по теоретико-множественному включению
+instance Eq (Graph) where
+  (==) (G g1) (G g2) = 
+	let min1 = minimum ([x | (x, y) <- g1] ++ [x | (x, y) <- g2]) in
+			isEq (G g1) (G g2) min1 where
+			isEq (G g1) (G g2) x | x > maximum ([x | (x, y) <- g1] ++ [x | (x, y) <- g2]) = True
+			isEq (G g1) (G g2) x = 
+							if ((find (\(e1, e2) -> e1 == x) g1) == Nothing) && ((find (\(e1, e2) -> e1 == x) g2) == Nothing) 
+							then isEq (G g1) (G g2) (x + 1)
+							else
+								if (find (\(e1, e2) -> e1 == x) g2) == Nothing 
+								then False
+								else (findFx x g1 == findFx x g2) && (isEq (G g1) (G g2) (x + 1))
+							
 instance Ord Graph where
-  (<=) = undefined
-
--- dom g возвращает область определения графика
+  (<=) (G g1) (G g2) = 
+	let min1 = minimum ([x | (x, y) <- g1]) in
+		---max1 = maximum [x | (x, y) <- g2] in
+			isEq (G g1) (G g2) min1 where
+			isEq (G g1) (G g2) x | x > maximum ([x | (x, y) <- g1]) = True
+			isEq (G g1) (G g2) x = 
+								if ((find (\(e1, e2) -> e1 == x) g1) == Nothing) && ((find (\(e1, e2) -> e1 == x) g2) == Nothing) 
+								then isEq (G g1) (G g2) (x + 1)
+								else
+									if (find (\(e1, e2) -> e1 == x) g2) == Nothing 
+									then False
+									else (findFx x g1 == findFx x g2) && (isEq (G g1) (G g2) (x + 1))
+								
 dom :: Graph -> [Int]
-dom = undefined
-
--- compose g1 g2 возвращает график суперпозиции функций с графиками
--- g1 и g2 (сначала применяется g1, потом g2)
+dom (G g) = foldl (\acc (x, y) -> if (find (\(e1, e2) -> e1 == x) g) /= Nothing then x : acc else acc) [min1..max1] g where
+	min1 = minX (G g)
+	max1 = maxX (G g)
+			
 compose :: Graph -> Graph -> Graph
-compose = undefined
-  
--- restrict g l строит сужение графика g на l. Не предполагается,
--- что l --- подмножество dom g.
+compose (G g1) (G g2) = G $ [(x, f (G g2) y)| (x, y) <- g1] where
+	f (G g) y = case (find (\(e1, e2) -> e1 == y) g2) of
+					Just (a1, a2) -> a2
+					
 restrict :: Graph -> [Int] -> Graph
-restrict = undefined
+restrict (G g) l = G [(x, f x) | x <- l, (find (\(e1, e2) -> e1 == x) g) /= Nothing] where
+		f x = case (find (\(e1, e2) -> e1 == x) g) of
+			Just (a1, a2) -> a2
 
--- isIncreasing g == True <=> g --- график (нестрого) возрастающей функции
 isIncreasing :: Graph -> Bool
-isIncreasing = undefined
-
--- isInjective g == True <=> g --- график инъективной функции
+isIncreasing (G g) = 
+	let l = [y | (x, y) <- (sort g)] in
+		all (>=0) (zipWith (-) l (reverse l))
+		
 isInjective :: Graph -> Bool
-isInjective = undefined
-
--- areMutuallyInverse g1 g2 == True <=> g1 и g2 --- графики взаимно-обратных
--- функций
+isInjective (G g) = 
+	let l = [y | (x, y) <- g] in
+		length l == length (nub l)
+		
 areMutuallyInverse :: Graph -> Graph -> Bool
-areMutuallyInverse = undefined
+areMutuallyInverse (G g1) (G g2) = g1 == [ (snd x, fst x) | x <- g2]
