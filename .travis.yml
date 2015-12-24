@@ -1,3 +1,3 @@
 language: haskell
 install: true
-script: script.sh
+script: ./script.sh
