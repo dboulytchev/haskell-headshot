@@ -59,4 +59,4 @@ isInjective (G a) = length (nub chkList) == length chkList where
 -- areMutuallyInverse g1 g2 == True <=> g1 и g2 --- графики взаимно-обратных
 -- функций
 areMutuallyInverse :: Graph -> Graph -> Bool
-areMutuallyInverse (G a) (G b) = [(snd x, fst x) | x <- b] == a
+areMutuallyInverse (G a) (G b) = sort [(snd x, fst x) | x <- b] == sort a
