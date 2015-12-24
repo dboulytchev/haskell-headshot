@@ -15,10 +15,10 @@ fromFun f m n = G {unG = [(x, f x) | x <- [m..n]]}
 
 -- toFun получает график и возвращает функцию. 
 toFun :: Graph -> (Int -> Int)
-toFun g = (\x -> f x unG g)
-	where f x (y:ys) = x
-		| x == y = y
-		| otherwise = f x ys
+toFun g = (\x -> f x (unG g))
+	where f x (y:ys) 
+		| x == fst y = snd y
+		| otherwise  = f x ys
 		
 -- Графики можно сравнивать на равенство
 instance Eq Graph where
@@ -26,8 +26,9 @@ instance Eq Graph where
 
 -- Графики упорядочены по теоретико-множественному включению
 instance Ord Graph where
-  (<=) g1 g2 = (head answ && length answ == 1) where 
-	answ = nub [elem x $ unG g) | x <- unG g1)]
+  (<=) (G []) (G []) = True
+  (<=) g1 g2 = (head answ && length answ == 1) 
+							where answ = nub [elem x (unG g2) | x <- (unG g1)] 
 
 -- dom g возвращает область определения графика
 dom :: Graph -> [Int]
@@ -36,12 +37,13 @@ dom g = fst $ unzip $ unG g
 -- compose g1 g2 возвращает график суперпозиции функций с графиками
 -- g1 и g2 (сначала применяется g1, потом g2)
 compose :: Graph -> Graph -> Graph
-compose g1 g2 = G [(fst x, toFun g2 $ snd x) | x <- unG g1])
+compose _ (G[]) = G []
+compose g1 g2 = G {unG = [(fst x, toFun g2 $ snd x) | x <- unG g1]}
   
 -- restrict g l строит сужение графика g на l. Не предполагается,
 -- что l --- подмножество dom g.
 restrict :: Graph -> [Int] -> Graph
-restrict g l = G [ x | x <- unG g, elem $ fst x l]
+restrict g l = G [ x | x <- unG g, elem (fst x) l]
 
 -- isIncreasing g == True <=> g --- график (нестрого) возрастающей функции
 
@@ -58,4 +60,4 @@ isInjective g = (length $ snd $ unzip $ unG g) == (length $ nub $ snd $ unzip $ 
 -- areMutuallyInverse g1 g2 == True <=> g1 и g2 --- графики взаимно-обратных
 -- функций
 areMutuallyInverse :: Graph -> Graph -> Bool
-areMutuallyInverse g1 g2 = g1 == [(snd x, fst x) | x <- unG g2] 
+areMutuallyInverse g1 g2 = (unG g1) == [(snd x, fst x) | x <- (unG g2)] 
