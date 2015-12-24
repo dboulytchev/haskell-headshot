@@ -1,7 +1,6 @@
 module Graph where
 
 import Data.List
-import Data.Set
 
 -- График целочисленной функции f --- это список пар (x, y), такой, что 
 -- f (x) = y <=> пара (x, y) входит в этот список. Гарантируется, что
@@ -44,7 +43,7 @@ compose (G a) (G b) = G ([(fst x, f2 $ f1 $ fst x) | x <- a]) where
 -- restrict g l строит сужение графика g на l. Не предполагается,
 -- что l --- подмножество dom g.
 restrict :: Graph -> [Int] -> Graph
-restrict (G a) n = G [x | x <- a, elem (fst a) n] 
+restrict (G a) n = G [x | x <- a, elem (fst x) n] 
 
 -- isIncreasing g == True <=> g --- график (нестрого) возрастающей функции
 isIncreasing :: Graph -> Bool
