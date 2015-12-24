@@ -49,7 +49,7 @@ restrict (G a) n = G [x | x <- a, elem (fst x) n]
 
 -- isIncreasing g == True <=> g --- график (нестрого) возрастающей функции
 isIncreasing :: Graph -> Bool
-isIncreasing (G a) = listY == sort listY where listY = [snd x | x <- a] 
+isIncreasing (G a) = listY == sort listY where listY = [snd x | x <- sort a] 
 
 -- isInjective g == True <=> g --- график инъективной функции
 isInjective :: Graph -> Bool
