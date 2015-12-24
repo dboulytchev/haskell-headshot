@@ -41,8 +41,12 @@ dom f = [ fst x | x <- (unG f)]
 compose :: Graph -> Graph -> Graph
 compose _ (G []) = G []
 compose (G []) _ = G []
-compose g1 g2 =
-    let f = toFun g2 in (G [ (fst x, f (snd x)) | x <- unG g1])
+compose g1 g2 = G $ foldl add [] $ dom g1 where
+     add gs x = if (y `elem` d2) then (x, f2 y):gs else gs where
+        y = f1 x
+        f1 = toFun g1
+        f2 = toFun g2
+     d2 = dom g2
 
 -- restrict g l строит сужение графика g на l. Не предполагается,
 -- что l --- подмножество dom g.
@@ -63,5 +67,5 @@ isInjective g =
 -- areMutuallyInverse g1 g2 == True <=> g1 и g2 --- графики взаимно-обратных
 -- функций
 areMutuallyInverse :: Graph -> Graph -> Bool
-areMutuallyInverse g1 g2 = 
-    let temp = [ (snd x, fst x) | x <- (unG g2)] in (unG g1) == temp
+areMutuallyInverse g1 g2 = g1 == (G $ map swap (unG g2)) where
+    swap (x, y) = (y, x)
