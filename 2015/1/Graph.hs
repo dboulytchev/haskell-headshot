@@ -1,6 +1,7 @@
 module Graph where
 
 import Data.List
+
 -- График целочисленной функции f --- это список пар (x, y), такой, что 
 -- f (x) = y <=> пара (x, y) входит в этот список. Гарантируется, что
 -- в списке нет двух пар с одинаковыми первыми компонентами; никаких
@@ -21,14 +22,15 @@ to_list f m n =
 -- toFun получает график и возвращает функцию. 
 toFun :: Graph -> (Int -> Int)
 toFun (G (list @ (x:xs))) = 
-  (\a -> search a list) where 
+  (\a -> search a list) where
+  search value [] = undefined  
   search value (h:t) = 
     if(value == fst h) then snd h
 	else search value t
 	
 -- Графики можно сравнивать на равенство
 instance Eq Graph where
-  (==) (G l1) (G l2) = l1 == l2
+  (==) (G l1) (G l2) = (sort l1) == (sort l2)
 
 -- Графики упорядочены по теоретико-множественному включению
 instance Ord Graph where
@@ -52,19 +54,16 @@ compose g1 g2 =
 -- что l --- подмножество dom g.
 
 restrict :: Graph -> [Int] -> Graph
-restrict gr (x:xs) = 
-  fromFun (toFun gr) (max h  x) (min (get_end xs) (get_end t)) where 
-    get_end (y:ys) = 
-      if(ys == []) then y
-      else get_end ys
-    (h:t) = dom gr  
+restrict (G []) _ = G []
+restrict (G list) l = G [ x | x <- list, elem (fst x) l ] 
 
 -- isIncreasing g == True <=> g --- график (нестрого) возрастающей функции
 isIncreasing :: Graph -> Bool
+isIncreasing(G []) = True
 isIncreasing gr =  
-  helper (dom2 gr) where 
+  helper (sort (unG gr)) where  
     helper (x:[]) = True
-    helper (x:xs) = (x <= head xs) && (helper xs)	 
+    helper (x:xs) = ((snd x) <= snd (head xs)) && (helper xs)	 
 	 
 -- isInjective g == True <=> g --- график инъективной функции
 isInjective :: Graph -> Bool
