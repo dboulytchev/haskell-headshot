@@ -74,7 +74,7 @@ main = do
   if compose empty g == empty then putStrLn "  compose passed"
                               else error "Failed: compose empty ? /= empty"
 
- {- putStrLn "Testing fromFun/toFun/==..."
+  putStrLn "Testing fromFun/toFun/==..."
   putStrLn "========================"
   rep 10 (\ _ -> do
             ys <- some 10
@@ -83,7 +83,7 @@ main = do
             then error $ "Failed: (fromFun (toFun g) 1 10 /= g) for g = " ++ show g
             else putStrLn "  passed"
          )
--}
+
   putStrLn "Testing ==/<=..."
   putStrLn "================"
   rep 10 (\ _ -> do

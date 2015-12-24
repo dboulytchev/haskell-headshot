@@ -12,7 +12,8 @@ newtype Graph = G {unG :: [(Int, Int)]} deriving Show
 fromFun :: (Int -> Int) -> Int -> Int -> Graph
 fromFun f m n = G (fromF f m n) where
     fromF f m n | (m == n)  = [(m, f m)]
-                | otherwise = (m, f m): (fromF f (m - 1) n)  
+                | (m < n) = (m, f m): (fromF f (m + 1) n)  
+                | otherwise = []
 
 -- toFun получает график и возвращает функцию. 
 toFun :: Graph -> (Int -> Int)
@@ -22,7 +23,6 @@ toFun (G a) = to a where
                 in if (x1 == b) then y1 
                     else to as b
         to [] b = b        
-
 -- Графики можно сравнивать на равенство
 instance Eq Graph where
   (==) (G a) (G b) = compare' a b 1 where
@@ -42,25 +42,10 @@ instance Ord Graph where
 -- dom g возвращает область определения графика
 dom :: Graph -> [Int]
 dom (G []) = []
-dom (G (x:xs)) = quickSort (d (x:xs)) where
+dom (G (x:xs)) = d (x:xs) where
     d [] = []
-    d (x:xs) = let (a, b) = x in b : (d xs)
-quickSort [] = []
-quickSort (h:t) = 
-    quickSort [y | y <- t, y < h] ++ [h] ++ quickSort [y | y <- t, y >= h]          
+    d (x:xs) = let (a, b) = x in a : (d xs)
     
-    
-    
-    {-[findMin xs min', findMax xs max'] where
-    (a, min') = x 
-    (b, max') = x
-    findMin [] m = m
-    findMin (x:xs) m = let (x', y') = x   
-                        in if (y' < m) then findMin xs y' else findMin xs m    
-    findMax [] m = m    
-    findMax (x:xs) m = let (x', y')  = x 
-                        in if (y' > max') then findMin xs y' else findMin xs m                 
--}        
 -- compose g1 g2 возвращает график суперпозиции функций с графиками
 -- g1 и g2 (сначала применяется g1, потом g2)
 compose :: Graph -> Graph -> Graph
@@ -78,12 +63,11 @@ compose (G as) (G bs) = G (super as bs) where
 -- что l --- подмножество dom g.
 restrict :: Graph -> [Int] -> Graph
 restrict (G a) l = G (subset a l) where
-    subset [] [l1, l2] = []
-    subset (a:as) [l1, l2] = 
+    subset _ [] = []
+    subset [] list = []
+    subset (a:as) (l:ls) = 
         let (x, y) = a
-            in if ((x >= l1) && (x <= l2)) then a:(subset as [l1, l2])
-               else subset as [l1, l2]   
-    subset _ _ = []           
+          in   if (x == l) then a : subset as (l:ls) else subset (a:as) ls            
                    
 
 -- isIncreasing g == True <=> g --- график (нестрого) возрастающей функции
@@ -91,24 +75,21 @@ isIncreasing :: Graph -> Bool
 isIncreasing (G (a:b:bs)) =
     let (x1, y1) = a
         (x2, y2) = b
-    in if (x1 <= x2) then isIncreasing (G (b:bs)) else False
+    in if ((y1 <= y2) && (x1 <= x2)) || ((y1 >= y2) && (x1 >= x2)) then isIncreasing (G (b:bs)) else False
 isIncreasing (G [x]) = True
 isIncreasing (G [])  = True    
 
 -- isInjective g == True <=> g --- график инъективной функции
 isInjective :: Graph -> Bool
 isInjective (G []) = True
-isInjective (G (a:as)) = haveSimilar a as where
-    haveSimilar a [] = True
-    haveSimilar a (x:xs) | (a == x)  = False 
-                         | otherwise = haveSimilar a xs 
+isInjective (G a) = 
+    let res = [(x, y) | (x, y) <- a, (x', y') <- a, x' == x] in
+        if length res > 0 then False else True
 
 -- areMutuallyInverse g1 g2 == True <=> g1 и g2 --- графики взаимно-обратных
 -- функций
 areMutuallyInverse :: Graph -> Graph -> Bool
 areMutuallyInverse (G []) (G []) = True
-areMutuallyInverse (G a) (G (b:bs)) = 
-    let (x, y) = b
-        invertB (b:bs) = (y, x) : invertB bs
-        in (==) (G a) (G (invertB (b:bs)))
-areMutuallyInverse _ _ = False        
+areMutuallyInverse (G a) (G (b:bs)) = (==) (G a) (G (invertB (b:bs))) where
+    invertB [] = []
+    invertB (b:bs) = let (x, y) = b in (y, x) : invertB bs
