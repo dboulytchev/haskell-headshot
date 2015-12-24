@@ -43,6 +43,7 @@ restrict graph l = G [(x, toFun graph x) | x <- l `intersect` fst (unzip $ unG g
 
 -- isIncreasing g == True <=> g --- график (нестрого) возрастающей функции
 isIncreasing :: Graph -> Bool
+isIncreasing (G []) = True
 isIncreasing graph = length (filter (\(y1, y2) -> y1 < y2) (zip ys $ tail ys)) == (length graph' - 1) where
   graph' = sort $ unG graph
   ys = snd $ unzip graph'
