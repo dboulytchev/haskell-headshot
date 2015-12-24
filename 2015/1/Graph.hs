@@ -23,7 +23,7 @@ fx val (x:xs) = if val == fst x then snd x else fx val xs
 
 -- Графики можно сравнивать на равенство
 instance Eq Graph where
-  G a == G b = a == b
+  G a == G b = sort a == sort b
 
 -- Графики упорядочены по теоретико-множественному включению
 instance Ord Graph where
