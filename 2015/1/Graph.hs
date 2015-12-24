@@ -32,7 +32,7 @@ instance Eq Graph where
 
 -- Графики упорядочены по теоретико-множественному включению
 instance Ord Graph where
-  (<=) = undefined
+  (<=) g1 g2 = foldl (&&) True [elem x (unG g2) | x <- (unG g1)]
 
 -- dom g возвращает область определения графика
 dom :: Graph -> [Int]
