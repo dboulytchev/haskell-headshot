@@ -82,4 +82,6 @@ isInjective gr =
 -- areMutuallyInverse g1 g2 == True <=> g1 и g2 --- графики взаимно-обратных
 -- функций
 areMutuallyInverse :: Graph -> Graph -> Bool
-areMutuallyInverse g1 g2 =  [ (snd x, fst x) | x <- (unG g2)] == (unG g1)
+areMutuallyInverse g = (==) $ inv g where
+    inv g = G (map sw (unG g))
+    sw (x, y) = (y, x)
