@@ -49,4 +49,4 @@ isInjective (G g) =
 		length l == length (nub l)
 		
 areMutuallyInverse :: Graph -> Graph -> Bool
-areMutuallyInverse (G g1) (G g2) = g1 == [ (snd x, fst x) | x <- g2] 
+areMutuallyInverse (G g1) (G g2) = (sort g1) == sort [ (snd x, fst x) | x <- g2]  
