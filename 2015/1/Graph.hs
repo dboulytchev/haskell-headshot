@@ -1,4 +1,3 @@
-
 module Graph where
 
 import Data.List
@@ -13,7 +12,7 @@ findFx x = find (\(e1, e2) -> e1 == x)
 
 toFun :: Graph -> (Int -> Int)
 toFun (G g) = (\x -> case find (\(e1, e2) -> e1 == x) g of
-						Just (x1, x2) -> x2)
+						Just (_, x2) -> x2)
 	
 minX (G g) = minimum [x | (x, y) <- g]
 maxX (G g) = maximum [x | (x, y) <- g]
@@ -23,16 +22,16 @@ instance Eq (Graph) where
 							
 instance Ord Graph where
   (<=) (G []) (G []) = True
-  (<=) (G g1) (G g2) = let i = nub [ elem x g2 | x <- g1] in 
+  (<=) (G g1) (G g2) = let i = nub [elem x g2 | x <- g1] in 
 					(head i && length i == 1) 
-  
+
 dom :: Graph -> [Int]
-dom (G g) = [x | (x, y) <- g]
+dom (G g) = [x | (x, _) <- g]
 			
 compose :: Graph -> Graph -> Graph
 compose (G g1) (G []) = G []
-compose (G g1) (G g2) = (G [ (fst x, toFun (G g2) (snd x)) | x <- g1])
-					
+compose (G g1) (G g2) = (G [(x, toFun (G g2) y) | (x, y) <- g1, (find (\(e1, e2) -> e1 == y) g2) /= Nothing])
+
 restrict :: Graph -> [Int] -> Graph
 restrict (G g) l = G [(x, f x) | x <- l, (find (\(e1, e2) -> e1 == x) g) /= Nothing] where
 		f x = case (find (\(e1, e2) -> e1 == x) g) of
@@ -49,4 +48,4 @@ isInjective (G g) =
 		length l == length (nub l)
 		
 areMutuallyInverse :: Graph -> Graph -> Bool
-areMutuallyInverse (G g1) (G g2) = (sort g1) == sort [ (snd x, fst x) | x <- g2]  
+areMutuallyInverse (G g1) (G g2) = (sort g1) == sort [ (snd x, fst x) | x <- g2] 
