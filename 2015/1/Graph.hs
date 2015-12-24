@@ -58,7 +58,7 @@ restrict g l = case g of
 
 -- isIncreasing g == True <=> g --- график (нестрого) возрастающей функции
 isIncreasing :: Graph -> Bool
-isIncreasing g = unG g == s
+isIncreasing g = sort (unG g) == s
                  where s = sortBy (\a b -> compare (snd a) (snd b)) (unG g)
 
 -- isInjective g == True <=> g --- график инъективной функции
