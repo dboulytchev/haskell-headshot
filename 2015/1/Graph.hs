@@ -21,8 +21,7 @@ toFun G{unG = xs} = (\ x -> f x xs)
 -- Графики можно сравнивать на равенство
 instance Eq Graph where
  G{unG = xs} == G{unG = ys} = 
-          notElem False $ [snd x == snd y| x <-xs, y <- ys, fst x == fst y] 
-   x /= y = not (x == y)
+          sort xs == sort ys
    
 -- Графики упорядочены по теоретико-множественному включению
 instance Ord Graph where
