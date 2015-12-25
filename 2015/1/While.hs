@@ -49,8 +49,9 @@ data S = SKIP          | -- пустой оператор (ничего не д�
                          -- e равно 0, то всё, если ни 0, ни 1 --- всё не определено
   deriving Show
 instance Eq E where
-    C x == C y = x == y
-    _ == _ = False
+    (==) = undefined
+    --C x == C y = x == y
+    --_ == _ = False
 -- Пример: факториал
 fact = READ "n" :>>:
        "f" ::=: C 1 :>>:
@@ -88,16 +89,20 @@ inter (IF cond com1 com2) inp fstate res = do
             evalled <- eval cond fstate 
             if (evalled == 1) then inter com1 inp fstate res else inter com2 inp fstate res
 inter (READ var) (h : t) fstate res = Right ((t, res), (\a -> if (a == var) then Just (C h) else fstate a))
+inter (READ var) [] fstate res = Left "Empty input"
 inter (WRITE smth) inp fstate res = do 
             a <- eval smth fstate
             return ((inp, res ++ [a]), fstate)
 inter (WHILE cond com) inp fstate res = do
     cond' <- eval cond fstate
-    ((inp', out), fs') <- inter com inp fstate res
     if (cond' == 1) then 
-            inter (WHILE cond com) inp' fs' (res ++ out)
+            calc
                 else if (cond' == 0) then return ((inp, res), fstate)
                     else Left "Error while evaluating in `while`"
+    where
+        calc = do 
+            ((inp', out), fs') <- inter com inp fstate res
+            inter (WHILE cond com) inp' fs' (res ++ out)
     
 eval :: E -> (String -> Maybe E) -> Either String Int
 eval (X var) fstate = if (res == Nothing) then Left "Unknown variable" else res''
@@ -173,7 +178,7 @@ eval (a :\/: b) f = do
 isPrime = 
     READ "x" :>>:
     "res" ::=: C 1 :>>:
-    "i" ::=: ((X "x" :/: C 2) :+: C 1) :>>:
+    "i" ::=: (X "x" :/: C 2) :>>:
     WHILE (X "i" :>: C 1) (
         IF (X "x" :%: X "i" :=: C 0) ("res" ::=: (C 0)) SKIP :>>:
          "i" ::=: (X "i" :-: C 1)
