@@ -65,9 +65,65 @@ fact = READ "n" :>>:
 --  int fact [5] => Right 120
 --  int fact []  => Left "empty input"
 int :: S -> [Int] -> Either String [Int] 
-int = undefined
+int s i = do
+    (_, o, _) <- loop (\ x -> Left $ "undefined variable " ++ x) [] i s
+    return $ reverse o where
+  loop s o i SKIP       = return (s, o, i)
+  loop s o i (x ::=: e) = do e' <- eval s e 
+                             return (subst s x e', o, i)
+  loop s o []     (READ _)  = Left "empty input"
+  loop s o (z:zs) (READ x)  = return (subst s x z, o, zs)
+  loop s o i      (WRITE e) = do e' <- eval s e
+                                 return (s, e':o, i)
+  loop s o i   (s1 :>>: s2) = do (s', o', i') <- loop s o i s1
+                                 loop s' o' i' s2
+  loop s o i   (IF c s1 s2) = do e' <- eval s c
+                                 case e' of
+                                   0 -> loop s o i s2
+                                   1 -> loop s o i s1
+                                   n -> Left $ "not a boolean value: " ++ show n
+  loop s o i   (WHILE c s1) = do e' <- eval s c
+                                 case e' of
+                                   0 -> return (s, o, i)
+                                   1 -> loop s o i (s1 :>>: WHILE c s1)
+                                   n -> Left $ "not a boolean value: " ++ show n
+  subst s x e y = if x == y then Right e else s y
+  eval :: (String -> Either String Int) -> E -> Either String Int
+  eval s (X x) = s x
+  eval s (C n) = return n
+  eval s (a :+:  b) = (+) <$> eval s a <*> eval s b
+  eval s (a :-:  b) = (-) <$> eval s a <*> eval s b
+  eval s (a :*:  b) = (*) <$> eval s a <*> eval s b
+  eval s (a :/:  b) = div <$> eval s a <*> eval s b
+  eval s (a :%:  b) = rem <$> eval s a <*> eval s b
+  eval s (a :=:  b) = (toBool (==)) <$> eval s a <*> eval s b 
+  eval s (a :/=: b) = (toBool (/=)) <$> eval s a <*> eval s b 
+  eval s (a :<:  b) = (toBool (<))  <$> eval s a <*> eval s b 
+  eval s (a :>:  b) = (toBool (>))  <$> eval s a <*> eval s b 
+  eval s (a :/\: b) = boolOp (&&) (eval s a) (eval s b)
+  eval s (a :\/: b) = boolOp (||) (eval s a) (eval s b)
+  toBool f x y = if f x y then 1 else 0
+  asBool 0 = Right False
+  asBool 1 = Right True
+  asBool n = Left $ "not a boolean value: " ++ show n
+  boolOp f x y = do
+    x' <- x
+    y' <- y 
+    toBool f <$> asBool x' <*> asBool y'
 
 -- Написать на While проверку простоты числа isPrime. Например,
 --   int isPrime [5] => Right 1
 --   int isPrime [8] => Right 0
-isPrime = undefined
+isPrime =
+  READ "n" :>>:
+  IF (X "n" :<: C 4) 
+     (WRITE (C 1))
+     ("d" ::=: C 2 :>>:
+      "cont" ::=: C 1 :>>:
+      WHILE ((X "n" :>: X "d" :*: X "d" :\/: X "n" :=: X "d" :*: X "d") :/\: X "cont")
+            (IF (X "n" :%: X "d" :=: C 0)
+                ("cont" ::=: C 0)
+                ("d"    ::=: X "d" :+: C 1)
+            ) :>>:
+      WRITE (X "cont")
+     )  
