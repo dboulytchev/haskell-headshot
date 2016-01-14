@@ -35,7 +35,7 @@ dom f = [x | (x, _) <- unG f]
 -- g1 и g2 (сначала применяется g1, потом g2)
 compose :: Graph -> Graph -> Graph
 compose _ (G []) = G []
-compose graph1 graph2 = G [(fst x, (toFun graph2) $ snd x) | x <- unG graph1]
+compose graph1 graph2 = G [(fst x, (toFun graph2) $ snd x) | x <- unG graph1, elem (snd x) $ dom graph2]
   
 -- restrict g l строит сужение графика g на l. Не предполагается,
 -- что l --- подмножество dom g.
