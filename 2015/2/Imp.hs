@@ -50,7 +50,7 @@ infixl 6 *!  -- произведение
 infix 2 <:=
 
 (<:=) :: String -> Expr -> Stmt
-(<:=) a b = (\f -> (\x -> if x == a then b f else f x))
+(<:=) a b = (\f -> \x -> if x == a then b f else f x)
 
 -- последовательое исполнение
 infixr 1 !>
