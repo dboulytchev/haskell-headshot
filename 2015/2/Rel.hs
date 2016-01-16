@@ -46,7 +46,7 @@ closure = R . closure' . unR where
 
 -- isReflexive r == True <=> r --- рефлексивное отношение на dom r
 isReflexive :: R -> Bool
-isReflexive (R r) = [(x,x) | x <- dom (R r), (x,x) `elem` r] == r
+isReflexive r@(R s) = [(x,x) | x <- dom r, (x,x) `elem` s] == r
 
 -- isSymmetric r == True <=> r --- симметричное отношение
 isSymmetric :: R -> Bool
