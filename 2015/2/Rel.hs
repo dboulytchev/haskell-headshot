@@ -5,7 +5,7 @@ import Data.Tuple
 
 -- Бинарное отношение на подмножестве целых чисел задано
 -- списком пар без повторений
-newtype R = R {unR :: [(Int, Int)]} deriving Show
+newtype R =: R {unR :: [(Int, Int)]} deriving Show
 
 -- Реализовать сравнение отношений на равенство (как множеств)
 instance Eq R where
