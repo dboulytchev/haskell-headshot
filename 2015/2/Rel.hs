@@ -19,7 +19,7 @@ sub (R r1) (R r2) = and [elem x r2| x <- r1]
 -- которых имеет хотя бы одно вхождение в r
 dom :: R -> [Int]
 dom (R r) = foldl (\acc x -> if not(elem x acc) then (x:acc) else acc)  [] r'
-	where r' = foldl (\acc x -> (fst x):(snd x):acc) [] r
+ where r' = foldl (\acc x -> (fst x):(snd x):acc) [] r
 
 -- add r1 r2 --- объединение r1 и r2 как множеств (в результате
 -- должен получиться список без повторений)
