@@ -1,3 +1,4 @@
+{-
 import Tester
 import Imp
 import Data.List
@@ -14,3 +15,4 @@ tests = [
         ]
 
 main = many tests
+-}
