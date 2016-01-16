@@ -9,7 +9,7 @@ newtype R = R {unR :: [(Int, Int)]} deriving Show
 
 -- Реализовать сравнение отношений на равенство (как множеств)
 instance Eq R where
-  (R r1) == (R r2) = (and [elem x r2|x <- r1]) && (and [elem y r1| y<-r1])
+  (R r1) == (R r2) = (and [elem x r2|x <- r1]) && (and [elem y r1| y<-r2])
 
 -- sub r1 r2 == True <=> r1 --- подмножество r2
 sub :: R -> R -> Bool
