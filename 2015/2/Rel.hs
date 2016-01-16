@@ -9,50 +9,53 @@ newtype R = R {unR :: [(Int, Int)]} deriving Show
 
 -- Реализовать сравнение отношений на равенство (как множеств)
 instance Eq R where
-  (==) = undefined
+  R r1 == R r2 = (sort r1) == (sort r2)
 
 -- sub r1 r2 == True <=> r1 --- подмножество r2
-sub :: R -> R -> Bool
-sub = undefined
+--sub :: R -> R -> Bool
+sub (R r1) (R r2) = [x | x <- r1, x `elem` r2] == r1
 
 -- dom r --- список (без повторений) целых чисел, каждое из
 -- которых имеет хотя бы одно вхождение в r
 dom :: R -> [Int]
-dom = undefined
+dom (R r) = nub $ (map fst r) ++ (map snd r)
 
 -- add r1 r2 --- объединение r1 и r2 как множеств (в результате
 -- должен получиться список без повторений)
 add :: R -> R -> R
-add = undefined
+add (R r1) (R r2) = R(nub $ r1 ++ r2)
 
 -- rev r --- отношение, "обратное" к r (т.е. в каждой паре надо
 -- компоненты поменять местами).
 rev :: R -> R
-rev = undefined
+rev (R r) = R $ map f r where
+			f (x,y) = (y,x)
 
 -- join r1 r2 --- отношение, состоящее из тех и только тех пар
 -- (x, y), для которых существует z, такое, что (x, z) принадлежит
 -- r1 и (z, y) принадлежит r2
 join :: R -> R -> R
-join = undefined
+join (R r1) (R r2) = R([(x,y) | (x,z) <- r1, (zind,y) <- r2, zind == z])
 
 -- closure r строит транзитивное замыкание отношения r (т.е. наименьшее
 -- транзитивное отношение, содержащее r)
 closure :: R -> R
-closure = undefined
+closure = R . closure' . unR where
+    closure' s = if s == s' then s else closure' s' where
+        s' = nub $ s ++ ([(x,y) | (x,z) <- s, (zind,y) <- s', zind == z])
 
 -- isReflexive r == True <=> r --- рефлексивное отношение на dom r
 isReflexive :: R -> Bool
-isReflexive = undefined
+isReflexive (R r) = [(x,x) | x <- dom (R r), (x,x) `elem` r] == r
 
--- isSymmetric r == True <=> r --- симметрияное отношение
+-- isSymmetric r == True <=> r --- симметричное отношение
 isSymmetric :: R -> Bool
-isSymmetric = undefined
+isSymmetric (R r) = [(a,b) | a <- dom (R r), b <- dom (R r), (a,b) `elem` r, (b,a) `elem` r] == r
 
 -- isTransitive r == True <=> r --- транзитивное отношение
 isTransitive :: R -> Bool
-isTransitive = undefined
+isTransitive (R r) = (R r) == closure (R r)
 
 -- isEquivalence r == True <=> r --- отношение эквивалентности
 isEquivalence :: R -> Bool
-isEquivalence = undefined
+isEquivalence (R r) = if (False `elem` [isReflexive $ R r, isSymmetric $ R r, isTransitive $ R r]) then False else True
