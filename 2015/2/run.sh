@@ -5,9 +5,6 @@ function check () {
 ghc RelTest.hs
 check
 
-./RelTest
-check
-
 ghc EqClassesTest.hs
 check
 
