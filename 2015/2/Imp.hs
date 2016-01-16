@@ -108,7 +108,7 @@ r10 = Imp.sum 4 undefined "sum"
 fact :: Int -> (Stmt, String)
 fact n = (Imp.fact' n, "res")
 fact' n =
-    "res" <:= lit 2 !>
+    "res" <:= lit 1 !>
 	"i"    <:= lit n !>
 	while (lit 0 <! var "i")
 	       ("res" <:= var "res" *! var "i" !>
