@@ -45,7 +45,7 @@ closure = undefined
 isReflexive :: R -> Bool
 isReflexive = undefined
 
--- isSymmetric r == True <=> r --- симметрияное отношение
+-- isSymmetric r == True <=> r --- симметричное отношение
 isSymmetric :: R -> Bool
 isSymmetric = undefined
 
