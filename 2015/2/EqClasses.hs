@@ -1,6 +1,7 @@
 module EqClasses where
 
 import Data.List
+import Data.Tuple
 import Rel
 
 
