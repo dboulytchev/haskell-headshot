@@ -16,11 +16,12 @@ type Stmt  = State -> State
 -- Комбинаторы выражений:
 -- литерал (целое число)
 lit :: Int -> Expr
-lit = undefined
+lit x = (\_ -> x)
 
 -- переменная
 var :: String -> Expr
-var = undefined
+--var :: String -> ((String -> Int) -> Int)
+var name = (\f -> f name)
 
 -- бинарные операции
 infixl 3 &&& -- конъюнкция
@@ -32,40 +33,41 @@ infix  4 =/= -- "не равно"
 infixl 5 +!  -- сумма
 infixl 5 -!  -- разность
 infixl 6 *!  -- произведение
-
+-- 0 - false, otherwise - true.
 (&&&), (|||), (<!), (>!), (===), (=/=), (+!), (-!), (*!) :: Expr -> Expr -> Expr
-
-(&&&) = undefined
-(|||) = undefined
-(<!)  = undefined
-(>!)  = undefined
-(===) = undefined
-(=/=) = undefined
-(+!)  = undefined
-(-!)  = undeifned
-(*!)  = undefined
+-- :: (State -> Int) -> (State -> Int) -> (State -> Int)
+--(&&&) x y = (\f -> if (x f /= 0 && y f /= 0) then 1 else 0)
+(&&&) x y = x *! y
+(|||) x y = x +! y
+(<!)  x y = (\f -> if (x f < y f) then 1 else 0)
+(>!)  x y = (\f -> if (x f > y f) then 1 else 0)
+(===) x y = (\f -> if (x f == y f) then 1 else 0)
+(=/=) x y = (\f -> if (x f /= y f) then 1 else 0)
+(+!)  x y = (\f -> x f + y f)
+(-!)  x y = (\f -> x f - y f)
+(*!)  x y = (\f -> x f * y f)
 
 -- Операторы
 -- присваивание
 infix 2 <:=
 
 (<:=) :: String -> Expr -> Stmt
-(<:=) = undefined
+(<:=) name val = (\f -> (\x -> if (x == name) then val f else f x))
 
 -- последовательое исполнение
 infixr 1 !>
 
 (!>) :: Stmt -> Stmt -> Stmt
-(!>) = undefined
+(!>) s1 s2 = s2 . s1
 
 -- ветвление (if-then-else)
 branch :: Expr -> Stmt -> Stmt -> Stmt
-branch = undefined
+branch cond s1 s2 = (\f -> if (cond f /= 0) then s1 f else s2 f)
                   
 -- цикл с предусловием                  
 while :: Expr -> Stmt -> Stmt
-while = undefined
-
+while cond s = while' cond s s where
+    while' cond s s' = (\f -> if (cond (s' f) /= 0) then while' cond s (s' . s) f else s' f)
 -- Примеры:
 -- выражение "a + b"
 a_plus_b :: Expr
@@ -101,7 +103,39 @@ sum n =
 r10 :: Int
 r10 = Imp.sum 4 undefined "sum"
 
+test' :: Stmt
+test' = 
+    "x" <:= lit 1 !>
+    while (var "x" >! lit 0)
+          ("x" <:= var "x" -! lit 1)
+          
+          
+test2 :: Int -> Stmt
+test2 x = 
+    "x" <:= lit x !>
+    branch (var "x" >! lit 5) 
+        ("x" <:= var "x" -! lit 1)
+        ("x" <:= var "x" +! lit 1)
+        
+test3 :: Stmt
+test3 = 
+    "x" <:= lit 10 !>
+    ("x" <:= var "x" -! lit 1) . ("x" <:= var "x" -! lit 1)
+    
+test4 :: Int -> Stmt
+test4 x = 
+    "x" <:= lit x !>
+    while (var "x" >! lit 0) 
+        ("x" <:= var "x" -! lit 1)
 -- Написать вычисление факториала. Результат -- оператор и имя переменной,
 -- в которой сохраняется ответ
 fact :: Int -> (Stmt, String)
-fact = undefined
+fact x = (
+    "x" <:= lit x !>
+    "fact" <:= lit 1 !>
+    while (var "x" >! lit 1) 
+        ("fact" <:= var "fact" *! var "x" !>
+         "x" <:= var "x" -! lit 1)
+    ,
+    "fact"
+    )
