@@ -107,8 +107,8 @@ r10 = Imp.sum 4 undefined "sum"
 -- в которой сохраняется ответ
 fact :: Int -> (Stmt, String)
 fact n = (
+    "i"    <:= lit n !>
     "fact" <:= lit 1 !>
-	"i"    <:= lit n !>
-	while (var "i" >! lit 0)
-	       ("fact" <:= var "fact" *! var "i" !>
-		   "i"     <:= var "i"    -! lit 1), "fact")
+     while (var "i" >! lit 0)
+       ("fact" <:= var "fact" *! var "i" !>
+        "i"     <:= var "i"    -! lit 1), "fact")
