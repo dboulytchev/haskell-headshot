@@ -1,4 +1,3 @@
-{-
 import Tester
 import Rel
 import EqClasses
@@ -32,4 +31,3 @@ tests = [
         ]
 
 main = many tests
--}
