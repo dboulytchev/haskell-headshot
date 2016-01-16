@@ -105,6 +105,9 @@ tests = [
                                          let r'' = R $ [(x, y) | x <- d, y <- d]
                                          putStr $ "Testing isTransitive " ++ show r'' ++ " ... "
                                          assertResult (==) True $ isTransitive r''        
+                                         let r''' = R $ reverse (unR r')
+                                         putStr $ "Testing isTransitive (closure " ++ show r''' ++ ") ... "
+                                         assertResult (==) True $ isTransitive (closure r''')
                                       ),
            test "isReflexive" (do
                                  putStr "Testing isReflexive (R []) ... "
