@@ -1,15 +1,14 @@
 module EqClasses where
 
-
+import Data.Lis
 import Rel
-import Data.List
 
 -- Написать функцию, которая по отношению (см. файл Rel.hs), которое
 -- является отношением эквивалентности, строит список классов эквивалентности
 classes :: R -> [[Int]]
 classes (R y) = main y [] where
-  main [] y = y
-  main (x: xs) y = main xs $ findClasses x y
+  main [] t = t
+  main (x: xs) t = main xs $ findClasses x t
 
   findClasses e []     = [[fst e, snd e]]
   findClasses e (x:xs) = if ((elem (fst e) $ x) || (elem (snd e) $ x))
