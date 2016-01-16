@@ -106,9 +106,10 @@ r10 = Imp.sum 4 undefined "sum"
 -- Написать вычисление факториала. Результат -- оператор и имя переменной,
 -- в которой сохраняется ответ
 fact :: Int -> (Stmt, String)
-fact n = (
+fact n = (Imp.fact' n, "fact")
+fact' n =
     "fact" <:= lit 1 !>
 	"i"    <:= lit n !>
 	while (var "i" >! lit 0)
 	       ("fact" <:= var "fact" *! var "i" !>
-		   "i"     <:= var "i"    -! lit 1), "fact")
+		   "i"     <:= var "i"    -! lit 1)
