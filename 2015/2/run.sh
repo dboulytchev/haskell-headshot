@@ -11,8 +11,8 @@ check
 ./EqClassesTest
 check
 
-#ghc ImpTest.hs
-#check
+ghc ImpTest.hs
+check
 
-#./ImpTest
-#check
+./ImpTest
+check

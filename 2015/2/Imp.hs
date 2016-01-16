@@ -16,11 +16,11 @@ type Stmt  = State -> State
 -- Комбинаторы выражений:
 -- литерал (целое число)
 lit :: Int -> Expr
-lit = undefined
+lit n = (\_ -> n) 
 
 -- переменная
 var :: String -> Expr
-var = undefined
+var str f = f str  
 
 -- бинарные операции
 infixl 3 &&& -- конъюнкция
@@ -35,36 +35,39 @@ infixl 6 *!  -- произведение
 
 (&&&), (|||), (<!), (>!), (===), (=/=), (+!), (-!), (*!) :: Expr -> Expr -> Expr
 
-(&&&) = undefined
-(|||) = undefined
-(<!)  = undefined
-(>!)  = undefined
-(===) = undefined
-(=/=) = undefined
-(+!)  = undefined
-(-!)  = undeifned
-(*!)  = undefined
+(&&&) x y = (*) <$> x <*> y
+(|||) x y = (+) <$> x <*> y
+(<!)  x y = (toBool (<)) <$> x <*> y
+(>!)  x y = (toBool (>)) <$> x <*> y
+(===) x y = (toBool (==)) <$> x <*> y
+(=/=) x y = (toBool (/=)) <$> x <*> y
+(+!)  x y = (+) <$> x <*> y
+(-!)  x y = (-) <$> x <*> y
+(*!)  x y = (*) <$> x <*> y
+
+toBool f x y = if f x y then 1 else 0
+
 
 -- Операторы
 -- присваивание
 infix 2 <:=
 
 (<:=) :: String -> Expr -> Stmt
-(<:=) = undefined
+(<:=) str expr = \state x -> if (x == str) then expr state else state x
 
 -- последовательое исполнение
 infixr 1 !>
 
 (!>) :: Stmt -> Stmt -> Stmt
-(!>) = undefined
+(!>) st1 st2 = st2 . st1 
 
 -- ветвление (if-then-else)
 branch :: Expr -> Stmt -> Stmt -> Stmt
-branch = undefined
+branch expr st1 st2 f = if (expr f /= 0) then st1 f else st2 f 
                   
 -- цикл с предусловием                  
 while :: Expr -> Stmt -> Stmt
-while = undefined
+while expr st f = if (expr f == 0) then f else while expr st (st f) 
 
 -- Примеры:
 -- выражение "a + b"
@@ -104,4 +107,18 @@ r10 = Imp.sum 4 undefined "sum"
 -- Написать вычисление факториала. Результат -- оператор и имя переменной,
 -- в которой сохраняется ответ
 fact :: Int -> (Stmt, String)
-fact = undefined
+fact n = (f n, "p") where 
+  f n = 
+        "p" <:= lit 1 !>
+		"i" <:= lit n !>
+		while (var "i" >! lit 0)
+		  ("p" <:= var "p" *! var "i" !>
+		   "i" <:= var "i" -! lit 1)
+		
+{-fact = READ "n" :>>:
+       "f" ::=: C 1 :>>:
+       WHILE (X "n" :>: C 0) 
+         ("f" ::=: X "f" :*: X "n" :>>:
+          "n" ::=: X "n" :-: C 1 
+         ) :>>:
+       WRITE (X "f")-}
