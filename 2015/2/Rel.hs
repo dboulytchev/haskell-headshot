@@ -42,7 +42,7 @@ join (R r1) (R r2) = R([(x,y) | (x,z) <- r1, (zind,y) <- r2, zind == z])
 closure :: R -> R
 closure = R . closure' . unR where
     closure' s = if s == s' then s else closure' s' where
-        s' = nub $ s ++ ([(x,y) | (x,z) <- s, (zind,y) <- s', zind == z])
+        s' = nub $ s ++ ([(x,y) | (x,z) <- s, (zind,y) <- s, zind == z])
 
 -- isReflexive r == True <=> r --- рефлексивное отношение на dom r
 isReflexive :: R -> Bool
@@ -54,7 +54,7 @@ isSymmetric (R r) = [(a,b) | a <- dom (R r), b <- dom (R r), (a,b) `elem` r, (b,
 
 -- isTransitive r == True <=> r --- транзитивное отношение
 isTransitive :: R -> Bool
-isTransitive (R r) = (R r) == closure (R r)
+isTransitive r = r == closure r
 
 -- isEquivalence r == True <=> r --- отношение эквивалентности
 isEquivalence :: R -> Bool
