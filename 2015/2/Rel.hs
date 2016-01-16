@@ -45,7 +45,8 @@ join (R r1) (R r2) = R([(fst' x, snd' x)|x<-s])
 -- closure r строит транзитивное замыкание отношения r (т.е. наименьшее
 -- транзитивное отношение, содержащее r)
 closure :: R -> R
-closure (R r) = R(foldl (\acc x -> if (elem x (unR(join (R r) (R r)))) then acc else x:acc) [] r)
+closure (R r) = add y (join y y)
+	where y = R (foldl (\acc x -> if (elem x (unR(join (R r) (R r)))) then acc else x:acc) [] r)
 
 -- isReflexive r == True <=> r --- рефлексивное отношение на dom r
 isReflexive :: R -> Bool
@@ -57,7 +58,7 @@ isSymmetric (R r) = and[elem (x,y) r|(y,x) <- r]
 
 -- isTransitive r == True <=> r --- транзитивное отношение
 isTransitive :: R -> Bool
-isTransitive (R r) = (add (R r) (join (R r) (R r))) == (R r) 
+isTransitive (R r) = sub (closure (R r)) (R r)
 
 -- isEquivalence r == True <=> r --- отношение эквивалентности
 isEquivalence :: R -> Bool
