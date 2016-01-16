@@ -27,7 +27,6 @@ dom (R r) = nub $ (map fst r) ++ (map snd r)
 -- должен получиться список без повторений)
 add :: R -> R -> R
 add (R r1) (R r2) = R . nub $ r1 ++ r2
-
 -- rev r --- отношение, "обратное" к r (т.е. в каждой паре надо
 -- компоненты поменять местами).
 rev :: R -> R
@@ -64,3 +63,4 @@ isTransitive r = r == closure r
 -- isEquivalence r == True <=> r --- отношение эквивалентности
 isEquivalence :: R -> Bool
 isEquivalence r = (isReflexive r) && (isSymmetric r) && (isTransitive r)
+--for restart
