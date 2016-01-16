@@ -109,6 +109,6 @@ fact :: Int -> (Stmt, String)
 fact n = (
     "i"    <:= lit n !>
     "fact" <:= lit 1 !>
-     while (var "i" >! lit 0)
+     while (var "i" >! lit 1)
        ("fact" <:= var "fact" *! var "i" !>
         "i"     <:= var "i"    -! lit 1), "fact")
