@@ -16,11 +16,11 @@ type Stmt  = State -> State
 -- Комбинаторы выражений:
 -- литерал (целое число)
 lit :: Int -> Expr
-lit = undefined
+lit x = \state -> x 
 
 -- переменная
 var :: String -> Expr
-var = undefined
+var str = \f -> f str
 
 -- бинарные операции
 infixl 3 &&& -- конъюнкция
@@ -35,36 +35,39 @@ infixl 6 *!  -- произведение
 
 (&&&), (|||), (<!), (>!), (===), (=/=), (+!), (-!), (*!) :: Expr -> Expr -> Expr
 
-(&&&) = undefined
-(|||) = undefined
-(<!)  = undefined
-(>!)  = undefined
-(===) = undefined
-(=/=) = undefined
-(+!)  = undefined
-(-!)  = undeifned
-(*!)  = undefined
+(&&&) exp1 exp2 = \st -> if ((exp1 st) /= 0) && ((exp2 st) /= 0) then 1 else 0
+(|||) exp1 exp2 = \st -> if ((exp1 st) /= 0) || ((exp2 st) /= 0) then 1 else 0
+(<!)  exp1 exp2 = \st -> if ((exp1 st) < (exp2 st)) then 1 else 0
+(>!)  exp1 exp2 = \st -> if ((exp1 st) > (exp2 st)) then 1 else 0
+(===) exp1 exp2 = \st -> if ((exp1 st) == (exp2 st)) then 1 else 0
+(=/=) exp1 exp2 = \st -> if ((exp1 st) /= (exp2 st)) then 1 else 0
+(+!)  exp1 exp2 = \st -> (exp1 st) + (exp2 st)
+(-!)  exp1 exp2 = \st -> (exp1 st) - (exp2 st)
+(*!)  exp1 exp2 = \st -> (exp1 st) * (exp2 st)
 
 -- Операторы
 -- присваивание
 infix 2 <:=
 
 (<:=) :: String -> Expr -> Stmt
-(<:=) = undefined
+(<:=)  str expr = \state x -> if (x == str) then expr state 
+                                            else state x
 
--- последовательое исполнение
+-- последовательное исполнение
 infixr 1 !>
 
 (!>) :: Stmt -> Stmt -> Stmt
-(!>) = undefined
+(!>) stmt1 stmt2 = \state -> stmt2 ( stmt1 state)
 
 -- ветвление (if-then-else)
 branch :: Expr -> Stmt -> Stmt -> Stmt
-branch = undefined
+branch expr stmt1 stmt2 = \state -> if ((expr state) /= 0) then stmt1 state
+                                                           else stmt2 state
                   
 -- цикл с предусловием                  
 while :: Expr -> Stmt -> Stmt
-while = undefined
+while expr stmt1 = \state -> if ((expr state) == 0) then state
+                                                    else while expr stmt1 (stmt1  state)
 
 -- Примеры:
 -- выражение "a + b"
@@ -103,5 +106,12 @@ r10 = Imp.sum 4 undefined "sum"
 
 -- Написать вычисление факториала. Результат -- оператор и имя переменной,
 -- в которой сохраняется ответ
+fact' n =
+   "i"   <:= lit n !>
+   "prod" <:= lit 1 !>
+   while (var "i" >! lit 0)
+        ("prod" <:= var "prod" *! var "i" !>
+         "i"   <:= var "i"   -! lit 1)
 fact :: Int -> (Stmt, String)
-fact = undefined
+fact n = (Imp.fact' n, "prod")
+
