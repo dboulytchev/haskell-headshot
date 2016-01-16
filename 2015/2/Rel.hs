@@ -14,8 +14,7 @@ instance Eq R where
 -- sub r1 r2 == True <=> r1 --- подмножество r2
 sub :: R -> R -> Bool
 sub (R []) (R []) = True
-sub r1 r2 = (head answ && length answ == 1) 
-							where answ = nub [elem x (unR r2) | x <- (unR r1)] 
+sub r1 r2 = and [x `elem` unR r2| x <-  unR r1]
 
 -- dom r --- список (без повторений) целых чисел, каждое из
 -- которых имеет хотя бы одно вхождение в r
@@ -26,7 +25,8 @@ dom r = nub $ concat [[x,y] | x <- fst $ unzip $ unR r, y <- snd $ unzip $ unR r
 -- должен получиться список без повторений)
 add :: R -> R -> R
 add (R[]) (R[]) = R[]
-add r1 r2 = R {unR = [(fst x, snd y) | x <- unR r1, y <- unR r2, snd x == snd y && fst x == fst y]}
+--add r1 r2 = R {unR = nub [(fst x, snd y) | x <- unR r1, y <- unR r2, snd x == snd y && fst x == fst y]}
+add r1 r2 = R {unR = nub (unR r1 ++ unR r2)}
 
 -- rev r --- отношение, "обратное" к r (т.е. в каждой паре надо
 -- компоненты поменять местами).
@@ -43,19 +43,22 @@ join r1 r2 = R {unR = [(fst x, snd y) | x <- unR r1, y <- unR r2, snd x == fst y
 -- транзитивное отношение, содержащее r)
 closure :: R -> R
 --closure (R r) = R(r ++ unR((join (R r) (R r)))) 
-closure r = R (nub (unR r ++ unR(join r r)))
+--closure r = R (nub (unR r ++ unR(join r r)))
+closure (R r) = add t (join t t) where t = R (foldl (\acc x -> if (elem x (unR(join (R r) (R r)))) then acc else x:acc) [] r)
 
 -- isReflexive r == True <=> r --- рефлексивное отношение на dom r
 isReflexive :: R -> Bool
-isReflexive r =  sort ([(fst x, snd x) | x <- (unR r), snd x == fst x ]) == sort (unR r) && ([(fst x, snd x) | x <- (unR r), fst x `elem` dom r]) /= []
+--isReflexive r =  sort ([(fst x, snd x) | x <- (unR r), snd x == fst x ]) == sort (unR r) && ([(fst x, snd x) | x <- (unR r), fst x `elem` dom r]) /= []
+isReflexive (R r) = and [elem (x,x) r| x <- dom (R r)]
 
 -- isSymmetric r == True <=> r --- симметрияное отношение
 isSymmetric :: R -> Bool
-isSymmetric r = sort ([(snd x, fst x) | x <- (unR r)]) == sort (unR r) && (length (unR r)) `mod` 2 == 0
+--isSymmetric r = sort ([(snd x, fst x) | x <- (unR r)]) == sort (unR r) && (length (unR r)) `mod` 2 == 0
+isSymmetric (R r) = and[elem (x,y) r|(y,x) <- r] 
 
 -- isTransitive r == True <=> r --- транзитивное отношение
 isTransitive :: R -> Bool
-isTransitive r = closure r  ==  r 
+isTransitive (R r) = sub (closure (R r)) (R r)
 
 
 -- isEquivalence r == True <=> r --- отношение эквивалентности
