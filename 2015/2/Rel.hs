@@ -45,7 +45,7 @@ join (R r1) (R r2) = R([(fst' x, snd' x)|x<-s])
 -- closure r строит транзитивное замыкание отношения r (т.е. наименьшее
 -- транзитивное отношение, содержащее r)
 closure :: R -> R
-closure (R r) = R(r ++ unR((join (R r) (R r)))) 
+closure (R r) = R(foldl (\acc x -> if (elem x (unR(join (R r) (R r)))) then acc else x:acc) [] r)
 
 -- isReflexive r == True <=> r --- рефлексивное отношение на dom r
 isReflexive :: R -> Bool
