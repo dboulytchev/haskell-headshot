@@ -3,9 +3,8 @@ function check () {
 }
 
 
-ghc EqClassesTest.hs
+ghc ImpTest.hs
 check
 
-./EqClassesTest
+./ImpTest
 check
-
