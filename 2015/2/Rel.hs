@@ -58,4 +58,4 @@ isTransitive r = r == closure r
 
 -- isEquivalence r == True <=> r --- отношение эквивалентности
 isEquivalence :: R -> Bool
-isEquivalence (R r) = if (False `elem` [isReflexive $ R r, isSymmetric $ R r, isTransitive $ R r]) then False else True
+isEquivalence r = if (False `elem` [isReflexive r, isSymmetric r, isTransitive r]) then False else True
