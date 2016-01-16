@@ -35,12 +35,12 @@ infixl 6 *!  -- произведение
 
 (&&&), (|||), (<!), (>!), (===), (=/=), (+!), (-!), (*!) :: Expr -> Expr -> Expr
 
-(&&&) a b = (\f -> if a f == 0 || b f == 0 then 0 else 1)
-(|||) a b = (\f -> if a f == 0 && b f == 0 then 0 else 1)
-(<!)  a b = (\f -> if a f < b f then 1 else 0)
-(>!)  a b = (\f -> if a f > b f then 1 else 0)
-(===) a b = (\f -> if a f == b f then 1 else 0)
-(=/=) a b = (\f -> if a f /= b f then 1 else 0)
+(&&&) a b = (\f -> if (a f == 0 || b f == 0) then 0 else 1)
+(|||) a b = (\f -> if (a f == 0 && b f == 0) then 0 else 1)
+(<!)  a b = (\f -> if (a f < b f) then 1 else 0)
+(>!)  a b = (\f -> if (a f > b f) then 1 else 0)
+(===) a b = (\f -> if (a f == b f) then 1 else 0)
+(=/=) a b = (\f -> if (a f /= b f) then 1 else 0)
 (+!)  a b = (\f -> a f + b f)
 (-!)  a b = (\f -> a f - b f)
 (*!)  a b = (\f -> a f * b f)
@@ -50,7 +50,7 @@ infixl 6 *!  -- произведение
 infix 2 <:=
 
 (<:=) :: String -> Expr -> Stmt
-(<:=) a b = (\f -> \x -> if x == a then b f else f x)
+(<:=) a b = (\f x -> if (x == a) then b f else f x)
 
 -- последовательое исполнение
 infixr 1 !>
@@ -60,13 +60,13 @@ infixr 1 !>
 
 -- ветвление (if-then-else)
 branch :: Expr -> Stmt -> Stmt -> Stmt
-branch a b c = (\f -> if (a f) /= 0 then b f
+branch a b c = (\f -> if ((a f) /= 0) then b f
                                     else c f)
                   
 -- цикл с предусловием                  
 while :: Expr -> Stmt -> Stmt
-while a b = (\f -> if (a f) == 0 then f
-                                 else while a b (b f))
+while a b = (\f -> if ((a f) == 0) then f
+                                   else while a b (b f))
 
 -- Примеры:
 -- выражение "a + b"
@@ -107,8 +107,8 @@ r10 = Imp.sum 4 undefined "sum"
 -- в которой сохраняется ответ
 fact :: Int -> (Stmt, String)
 fact n = (
-    "i"    <:= lit n !>
     "fact" <:= lit 1 !>
-     while (var "i" >! lit 1)
-       ("fact" <:= var "fact" *! var "i" !>
-        "i"     <:= var "i"    -! lit 1), "fact")
+	"i"    <:= lit n !>
+	while (var "i" >! lit 0)
+	       ("fact" <:= var "fact" *! var "i" !>
+		   "i"     <:= var "i"    -! lit 1), "fact")
