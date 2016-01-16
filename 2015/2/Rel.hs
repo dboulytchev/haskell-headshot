@@ -44,7 +44,7 @@ join r1 r2 = R {unR = [(fst x, snd y) | x <- unR r1, y <- unR r2, snd x == fst y
 closure :: R -> R
 --closure (R r) = R(r ++ unR((join (R r) (R r)))) 
 --closure r = R (nub (unR r ++ unR(join r r)))
-closure (R r) = add t (join t t) where t = R (foldl (\acc x -> if (elem x (unR(join (R r) (R r)))) then acc else x:acc) [] r)
+closure r = if (r == clrr) then  clrr else closure clrr where clrr = add r (join r r)
 
 -- isReflexive r == True <=> r --- рефлексивное отношение на dom r
 isReflexive :: R -> Bool
@@ -57,7 +57,7 @@ isSymmetric (R r) = and[elem (x,y) r|(y,x) <- r]
 
 -- isTransitive r == True <=> r --- транзитивное отношение
 isTransitive :: R -> Bool
-isTransitive (R r) = sub (closure (R r)) (R r)
+isTransitive (R r) = (closure (R r)) == (R r)
 
 
 -- isEquivalence r == True <=> r --- отношение эквивалентности
