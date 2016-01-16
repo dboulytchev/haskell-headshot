@@ -1,6 +1,6 @@
 module EqClasses where
 
-import Data.Lis
+import Data.List
 import Rel
 
 -- Написать функцию, которая по отношению (см. файл Rel.hs), которое
