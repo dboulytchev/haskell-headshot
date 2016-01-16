@@ -7,3 +7,9 @@ check
 
 ./RelTest
 check
+
+ghc EqClassesTest.hs
+check
+
+./EqClassesTest
+check
