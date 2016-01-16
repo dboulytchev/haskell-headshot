@@ -56,7 +56,7 @@ infix 2 <:=
 infixr 1 !>
 
 (!>) :: Stmt -> Stmt -> Stmt
-(!>) a b = a . b
+(!>) a b = (\f -> b ( a f)
 
 -- ветвление (if-then-else)
 branch :: Expr -> Stmt -> Stmt -> Stmt
@@ -106,10 +106,10 @@ r10 = Imp.sum 4 undefined "sum"
 -- Написать вычисление факториала. Результат -- оператор и имя переменной,
 -- в которой сохраняется ответ
 fact :: Int -> (Stmt, String)
-fact n = (Imp.fact' n, "fact")
+fact n = (Imp.fact' n, "res")
 fact' n =
-    "fact" <:= lit 1 !>
+    "res" <:= lit 2 !>
 	"i"    <:= lit n !>
-	while (var "i" >! lit 0)
-	       ("fact" <:= var "fact" *! var "i" !>
-		   "i"     <:= var "i"    -! lit 1)
+	while (lit 0 <! var "i")
+	       ("res" <:= var "res" *! var "i" !>
+		   "i"    <:= var "i"    -! lit 1)
