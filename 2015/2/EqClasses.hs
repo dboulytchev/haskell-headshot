@@ -10,5 +10,5 @@ classes (R xs) = map clearList $ foldl isIn [] xs
 	 clearList x = foldl (\acc x -> if (elem x acc) then acc else x:acc) [] x
 	 isIn :: [[Int]] -> (Int, Int) -> [[Int]]
 	 isIn [] x = [[fst x, snd x]]
-	 isIn (y:ys) x = if (elem (fst x) y || elem (snd x) y) then ((fst x):(snd x):y):ys
-                                                         else [fst x, snd x]:y:ys	 
+	 isIn (y:ys) (a, b) = if (elem a y || elem b y) then (a:b:y):ys
+                                                        else [a, b]:y:ys		 
