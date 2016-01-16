@@ -53,7 +53,7 @@ isSymmetric (R r) = and [(y, x) `elem` r | (x, y) <- r]
  
 -- isTransitive r == True <=> r --- транзитивное отношение
 isTransitive :: R -> Bool
-isTransitive (R r) =  sub (closure (R r)) (R r)
+isTransitive (R r) =  (closure (R r)) == (R r)
  
 -- isEquivalence r == True <=> r --- отношение эквивалентности
 isEquivalence :: R -> Bool
