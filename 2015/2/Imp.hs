@@ -42,7 +42,7 @@ infixl 6 *!  -- произведение
 (===) = undefined
 (=/=) = undefined
 (+!)  = undefined
-(-!)  = undeifned
+(-!)  = undefined
 (*!)  = undefined
 
 -- Операторы
