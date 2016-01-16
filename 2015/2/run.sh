@@ -1,0 +1,2 @@
+ghc RelTest.hs
+./RelTest
