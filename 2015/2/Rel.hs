@@ -50,7 +50,7 @@ isReflexive r@(R s) = and [(x, x) `elem` s | x <- dom r]
 
 -- isSymmetric r == True <=> r --- симметричное отношение
 isSymmetric :: R -> Bool
-isSymmetric (R r) = and [(a,b) `elem` r, (b,a) <- r]
+isSymmetric (R r) = and [(a,b) `elem` r | (b,a) <- r]
 
 -- isTransitive r == True <=> r --- транзитивное отношение
 isTransitive :: R -> Bool
