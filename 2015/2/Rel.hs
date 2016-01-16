@@ -46,7 +46,8 @@ join (R r1) (R r2) = R (join' r1 r2) where
 -- closure r строит транзитивное замыкание отношения r (т.е. наименьшее
 -- транзитивное отношение, содержащее r)
 closure :: R -> R
-closure (R r) = R (nub [ (x1,y2) | (x1,y1) <- r, (x2,y2) <- r, y1 == x2 || (x1 == x2 && y1 == y2) ])
+closure (R r) = if length r == length c then (R r)  else closure (R c)
+  where c = nub [ (x1,y2) | (x1,y1) <- r, (x2,y2) <- r, y1 == x2 || (x1 == x2 && y1 == y2) ]
 
 -- isReflexive r == True <=> r --- рефлексивное отношение на dom r
 isReflexive :: R -> Bool

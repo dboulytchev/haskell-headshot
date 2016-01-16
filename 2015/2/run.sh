@@ -8,11 +8,11 @@ check
 ./RelTest
 check
 
-# ghc EqClassesTest.hs
-# check
+ghc EqClassesTest.hs
+check
 
-# ./EqClassesTest
-# check
+./EqClassesTest
+check
 
 # ghc ImpTest.hs
 # check
