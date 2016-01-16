@@ -173,8 +173,8 @@ main = do
             let gi  = G $ zip (take 5 xs) ys
             let gni = G $ zip xs (ys ++ ys)
             if isInjective gi  then putStrLn "  passed"
-                               else error $ "Failed: isInjective " ++ show gi ++ " /= True"
-            if isInjective gni then error $ "Failed: isInjective " ++ show gi ++ " /= False" 
+                               else error $ "Failed: isInjective " ++ show gi  ++ " /= True"
+            if isInjective gni then error $ "Failed: isInjective " ++ show gni ++ " /= False" 
                                else putStrLn "  passed"
             case testPermutations isInjective gi of
               Nothing -> putStrLn "  passed"
