@@ -53,7 +53,6 @@ isReflexive (R r) = and [elem (x,x) r| x <- dom (R r)]
 
 -- isSymmetric r == True <=> r --- симметрияное отношение
 isSymmetric :: R -> Bool
---isSymmetric r = sort ([(snd x, fst x) | x <- (unR r)]) == sort (unR r) && (length (unR r)) `mod` 2 == 0
 isSymmetric (R r) = and[elem (x,y) r|(y,x) <- r] 
 
 -- isTransitive r == True <=> r --- транзитивное отношение
