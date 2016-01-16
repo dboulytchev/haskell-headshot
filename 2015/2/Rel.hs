@@ -57,10 +57,8 @@ join (R {unR = a}) (R {unR = b}) = R {unR = join' (R {unR = a}) (R {unR = b})}
 -- closure r строит транзитивное замыкание отношения r (т.е. наименьшее
 -- транзитивное отношение, содержащее r)
 closure :: R -> R
-closure R {unR = x} = add a (join a a)
-	where a = R (foldl (\acc b -> if (elem b (join' (R {unR = x}) (R {unR = x}))) then acc else b:acc) [] x)
-
---closure R {unR = x} = R {unR = nub ( x ++ join' (R {unR = x}) (R {unR = x}) )}
+closure R {unR = x} | R {unR = x} == R {unR = nub (x ++ join' (R {unR = x}) (R {unR = x}))} = R {unR = x}
+		    | otherwise = closure R { unR = nub (x ++ join' (R {unR = x}) (R {unR = x}))}
 
 -- isReflexive r == True <=> r --- рефлексивное отношение на dom r
 isReflexive :: R -> Bool
