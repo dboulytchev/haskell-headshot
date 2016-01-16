@@ -56,7 +56,7 @@ infix 2 <:=
 infixr 1 !>
 
 (!>) :: Stmt -> Stmt -> Stmt
-(!>) a b = (\f -> b ( a f)
+(!>) a b = (\f -> b ( a f))
 
 -- ветвление (if-then-else)
 branch :: Expr -> Stmt -> Stmt -> Stmt
