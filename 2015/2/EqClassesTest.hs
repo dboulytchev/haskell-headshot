@@ -30,4 +30,4 @@ tests = [
                                 )
         ]
 
-main = many tests
+main = many Main.tests
