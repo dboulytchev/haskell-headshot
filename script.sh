@@ -1,6 +1,14 @@
-echo Test
-cd 2015/2
-./run.sh
+make 
 x=$?
-cd ../..
-exit $x
+
+if [ $x == 0 ]
+then
+  cd 1
+  make check
+  x=$?
+  cd ..
+  exit $x
+else
+  exit $x
+fi
+
