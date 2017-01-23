@@ -10,5 +10,5 @@ addons:
     packages:
     - ghc-7.10.2
 install: cabal update
-script: PATH=/opt/ghc/7.10.2/bin:$PATH which ghc && ./script.sh
+script: PATH=/opt/ghc/7.10.2/bin:$PATH which ghc && ghc --version && ./script.sh
 
