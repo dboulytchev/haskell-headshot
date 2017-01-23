@@ -1,5 +1,8 @@
 module Imp where
 
+import Tester
+import Data.List
+
 -- Реализовать набор комбинаторов для императивного программирования
 -- в Haskell (денотационный интерпретатор shallow-DSL)
 
@@ -8,7 +11,7 @@ type State = String -> Int
 
 -- Выражение --- это функция, которая по состоянию возвращает
 -- значение этого выражения
-type Expr  = State -> Int
+type Expr = State -> Int
 
 -- Оператор --- это преобразователь состояния
 type Stmt  = State -> State
@@ -16,11 +19,12 @@ type Stmt  = State -> State
 -- Комбинаторы выражений:
 -- литерал (целое число)
 lit :: Int -> Expr
-lit = undefined
+lit x = (\_ -> x)
 
 -- переменная
 var :: String -> Expr
-var = undefined
+
+var str = (\f -> f str)
 
 -- бинарные операции
 infixl 3 &&& -- конъюнкция
@@ -35,37 +39,37 @@ infixl 6 *!  -- произведение
 
 (&&&), (|||), (<!), (>!), (===), (=/=), (+!), (-!), (*!) :: Expr -> Expr -> Expr
 
-(&&&) = undefined
-(|||) = undefined
-(<!)  = undefined
-(>!)  = undefined
-(===) = undefined
-(=/=) = undefined
-(+!)  = undefined
-(-!)  = undeifned
-(*!)  = undefined
+(<!)  a b = \state -> if a state < b state then 1 else 0
+(>!)  a b = \state -> if a state > b state then 1 else 0
+(===) a b = \state -> if a state == b state then 1 else 0
+(=/=) a b = \state -> if a state /= b state then 1 else 0
+(+!)  a b = \state -> a state + b state
+(-!)  a b = \state -> a state - b state
+(*!)  a b = \state -> a state * b state
+(&&&) a b = a *! b
+(|||) a b = a +! b
 
 -- Операторы
 -- присваивание
 infix 2 <:=
 
 (<:=) :: String -> Expr -> Stmt
-(<:=) = undefined
+(<:=) name val = (\f -> (\x -> if x == name then val f else f x))
 
 -- последовательое исполнение
 infixr 1 !>
 
 (!>) :: Stmt -> Stmt -> Stmt
-(!>) = undefined
+(!>) stmt1 stmt2 = \state -> stmt2 (stmt1 state)
 
 -- ветвление (if-then-else)
-branch :: Expr -> Stmt -> Stmt -> Stmt
-branch = undefined
+branch expr stmt1 stmt2 = \state -> if expr state == 0 then stmt2 state
+                                                       else stmt1 state
                   
 -- цикл с предусловием                  
 while :: Expr -> Stmt -> Stmt
-while = undefined
-
+while expr stmt1 = \state -> if expr state == 0 then state
+                                                else while expr stmt1 (stmt1 state)
 -- Примеры:
 -- выражение "a + b"
 a_plus_b :: Expr
@@ -104,4 +108,10 @@ r10 = Imp.sum 4 undefined "sum"
 -- Написать вычисление факториала. Результат -- оператор и имя переменной,
 -- в которой сохраняется ответ
 fact :: Int -> (Stmt, String)
-fact = undefined
+fact i = 
+	("i" <:= lit i !>
+    "fact" <:= lit 1 !>
+    while (var "i" >! lit 1) 
+        ("fact" <:= var "fact" *! var "i" !>
+         "i" <:= var "i" -! lit 1)
+    , "fact")
