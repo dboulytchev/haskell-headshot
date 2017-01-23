@@ -9,30 +9,34 @@ data RegA = RegA {valA ::Int}
 -- регистр D
 data RegD = RegD {valD :: Int}
 
+-- тип инструкции
+data TypeOfCommand = E | R | J
+
 -- Команда в программе
 data Command = Command {flag :: Maybe String,
-                        com :: String,
+                        com :: TypeOfCommand,
                         number:: Maybe Int,
                         flagToGo :: Maybe String}
 
 -- Список команд
 type Instructions = [Command]
+type ProgramText = [String]
 
 -- Делает команду из строки входного файла
-getCommand :: [String] -> Command
+getCommand :: ProgramText -> Command
 getCommand comm@(x:xs) = let isFlag s = if (last s == ':') then Just $ init s else Nothing in
                              case isFlag x of
                                (Just lbl) -> makeComm (Just lbl) xs
                                Nothing    -> makeComm Nothing comm
 
 -- Делает из строки и флага в начале  команду
-makeComm :: Maybe String -> [String] -> Command
+makeComm :: Maybe String -> ProgramText -> Command
 makeComm lbl comm@(x:xs) =
   case x of
-      "e" -> Command lbl "e" Nothing Nothing
-      "r" -> Command lbl "r" Nothing Nothing
+      "e" -> Command lbl E Nothing Nothing
+      "r" -> Command lbl R Nothing Nothing
       "j" -> makeJump lbl comm where
-        makeJump lbl (j:n:nl) = Command lbl "j" (Just (read n :: Int)) (Just $ head nl)
+        makeJump lbl (j:n:nl) = Command lbl J (Just (read n :: Int)) (Just $ head nl)
 
 
 -- Парсит входную программу на команды
@@ -49,16 +53,18 @@ data Execution = Finished String |
 execComm :: Command -> RegA -> RegD -> Int -> Int -> Execution
 execComm comm curRega curRegd numStr maxStr =
      case com comm of
-          "e" -> if (valA curRega == (-1) && numStr > maxStr)
-                    then Finished $ show $ valD curRegd
-                 else Finished "."
-          "r" -> if (valA curRega == (-1) && numStr <= maxStr)
-                    then ReadStream curRega curRegd
-                 else Finished "."
-          "j" -> if (valA curRega == (-1)) then Finished "."
-                 else if (valA curRega == 0)
-                    then Jump (RegA (-1)) (RegD (valD curRegd +  fromJust ( number comm))) ( flagToGo comm )
-                 else Jump (RegA (valA curRega - 1)) curRegd Nothing
+          E | (valA curRega == (-1) && numStr > maxStr)
+                  -> Finished $ show $ valD curRegd
+              | otherwise -> Finished "."
+
+          R | (valA curRega == (-1) && numStr <= maxStr)
+                  ->ReadStream curRega curRegd
+              | otherwise ->  Finished "."
+
+          J | (valA curRega == (-1)) -> Finished "."
+              | (valA curRega == 0)
+                  -> Jump (RegA (-1)) (RegD (valD curRegd +  fromJust ( number comm))) (flagToGo comm )
+              | otherwise -> Jump (RegA (valA curRega - 1)) curRegd Nothing
 
 
 -- Делает словарь по лэйблам - (лэйблб, номер в списке команд)
@@ -68,7 +74,6 @@ makeDictOfLabels xs = Map.fromList $ makePairs xs 0 where
   makePairs (x:xs) num = case flag x of
                            Just smt -> (smt, num) : (makePairs xs $ num + 1)
                            Nothing  -> makePairs xs $ num + 1
-
 
 main =
   do
