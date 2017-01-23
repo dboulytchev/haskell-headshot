@@ -2,7 +2,6 @@
 import Data.List.Split
 import System.Environment
 
-data my = O | S my
 data Flag = No_Flag | MkFlag String deriving (Eq, Show)
 data Instr = E Flag | R Flag | J Flag Int Flag deriving (Show, Eq)
 data A = NotInt | A Int deriving Eq
@@ -54,4 +53,4 @@ iter sp (x : xs) (A a) b num fu = case x of
 main = do
 	args <- getArgs
 	instrs <- readFile $ head args
-	let instL = parse instrs in print(iter instL instL NotInt 0 [] fun) 
+	let instL = parse instrs in print(reverse $ iter instL instL NotInt 0 [] fun) 
