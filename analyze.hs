@@ -12,7 +12,7 @@ data Ans = Ans(Int, [Int]) deriving (Eq)
 instance Ord Ans where
 	Ans x <= Ans y = fst x <= fst y
 instance Show Ans where
-	show (Ans x) = "(" ++ show (fst x) ++ "," ++ show (snd x) ++ ")"
+	show (Ans x) = "(" ++ show (fst x) ++ "," ++ show (reverse $ snd x) ++ ")"
 
 parse :: String -> [Instr]
 parse x = map parse2 $ filter (not.null) $ map (\j -> filter (/= "") j) $ map (splitOneOf " :\t") (splitOn "\n" x)
@@ -53,4 +53,4 @@ iter sp (x : xs) (A a) b num fu = case x of
 main = do
 	args <- getArgs
 	instrs <- readFile $ head args
-	let instL = parse instrs in print(reverse $ iter instL instL NotInt 0 [] fun) 
+	let instL = parse instrs in print(iter instL instL NotInt 0 [] fun) 
