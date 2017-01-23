@@ -1,51 +1,33 @@
 import System.IO  
 import System.Environment 
+import Data.List.Split
 
 -- data: 
 
 data Command i s = E | R | J i s deriving Show
-data Line m i s = Line {mark :: Maybe m, cmd :: Command i s} deriving Show
-data State a d m1 i1 s1 m2 i2 s2 args = State {getA :: Maybe a, getD :: d, curCommands :: [Line m1 i1 s1], allCommands :: [Line m2 i2 s2], getArg :: [args]}
 
 -- end data
 
 -- parsing input:
-
-splitOn s xs = helper s xs [] where
-	helper s [] acc = [acc]
-	helper s (x:xs) acc = if x == s then acc : helper s xs [] else helper s xs (acc ++ [x])
 	
-parseCommand xs = let s = filter (/= []) (splitOn ' ' xs) in case s of
-	["r"] -> R
-	["e"] -> E
-	x -> J (read (x !! 1) :: Int) (x !! 2)
-	
-toLine (x:y:[]) = Line {mark = Just x, cmd = parseCommand y}
-toLine (x:[])   = Line {mark = Nothing, cmd = parseCommand x}
-	
-parseLines []     = []
-parseLines (x:xs) = let p = splitOn ':' x in toLine p : parseLines xs
-
-tabToSpace x = if x == '\t' then ' ' else x
-parse xs = parseLines (lines (map tabToSpace xs)) 
+parse' input = map interpriate (map (splitOn ":") (lines input)) where
+	interpriate [l, c] = (Just l,  comm $ words c)
+	interpriate [c]    = (Nothing, comm $ words c)
+	comm ["e"]       = E
+	comm ["r"]       = R
+	comm ["j", i, s] = J (read i :: Int) s
 
 -- end parsing input
 
 -- evaluation:  
 
-findMark s lst@(l:ls) = if mark l == Just s then lst else findMark s ls
-
-eval state = evalCurCommand (cmd (head (curCommands state))) where
-	evalCurCommand E = evalE (getA state) (getArg state) where
-		evalE Nothing [] = Just (getD state)
-		evalE _ _        = Nothing
-	evalCurCommand R = evalR (getA state) (getArg state) where
-		evalR Nothing (x:xs) = let newState = state {getA = Just x, curCommands = tail (curCommands state), getArg = xs} in eval newState
-		evalR _ _            = Nothing
-	evalCurCommand (J i s) = evalJ (getA state) where
-		evalJ (Just 0) = let newState = state {getA = Nothing, getD = (getD state) + i, curCommands = findMark s (allCommands state)} in eval newState
-		evalJ (Just x) = let newState = state {getA = Just (x - 1), curCommands = tail (curCommands state)} in eval newState
-		evalJ Nothing  = Nothing
+findMark s lst@((l, c):ls) = if l == Just s then map snd lst else findMark s ls
+		
+eval Nothing  d []        (E:_)         _ = Just d	
+eval Nothing  d (i:input) (R:com)       s = eval (Just i) d input com s
+eval (Just 0) d input     ((J i l):com) s = eval Nothing (d + i) input (findMark l s) s
+eval (Just a) d input     ((J i l):com)	s = eval (Just (a - 1)) d input com s 
+eval _        _ _          _            _ = Nothing
 		
 -- end evaluation
 
@@ -53,17 +35,13 @@ eval state = evalCurCommand (cmd (head (curCommands state))) where
 
 parseAnswer Nothing  = "."
 parseAnswer (Just x) = show x
- 
-toInt []     = []
-toInt (x:xs) = (read x :: Int) : toInt xs 
 
 -- end additional functions
 
 main = do 
 	args <- getArgs
 	allFile <- readFile (head args)
-	let intArgs = toInt (tail args)
-	let listCommand = parse allFile
-	let startState = State {getA = Nothing, getD = 0, curCommands = listCommand, allCommands = listCommand, getArg = intArgs}
-	let answer = eval startState
+	let intArgs = map (\x -> read x :: Int) (tail args)
+	let listCommand = parse' allFile
+	let answer = eval Nothing 0 intArgs (map snd listCommand) listCommand
 	putStrLn (parseAnswer answer)
