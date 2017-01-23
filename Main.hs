@@ -1,3 +1,5 @@
+module Main where
+
 import Parser
 import Exec
 import System.Environment
@@ -10,3 +12,6 @@ main = do
 	   paersed <- Parser.parse path
 	   ex      <- Exec.result paersed input
 	   return ()
+	                                        
+
+
