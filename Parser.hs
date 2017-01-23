@@ -2,9 +2,8 @@ module Parser where
 
 import Data.List as List
 
-data Command = Exit | Read | Jump deriving Show
 
-data Inst = InstExit { label :: Maybe String, com :: Command} | InstRead { label :: Maybe String, com :: Command} | InstJump { label :: Maybe String, com :: Command, num :: Int, goTo :: String} deriving Show
+data Inst = InstExit { label :: Maybe String} | InstRead { label :: Maybe String} | InstJump { label :: Maybe String, num :: Int, goTo :: String} deriving Show
 
 start text = makeListOfInst $ lines text
 
@@ -19,8 +18,8 @@ getInst inst@(l : xs) = case isLable l of
 isLable s | last s == ':' = Just $ init s
           | otherwise     = Nothing
 
-getCom lab inst@(c : xs) | c == "e"  = (InstExit lab Exit)
-                         | c == "r"  = (InstRead lab Read)
+getCom lab inst@(c : xs) | c == "e"  = (InstExit lab)
+                         | c == "r"  = (InstRead lab)
                          | otherwise = getJump lab inst
 
-getJump lab [j,n,l] = (InstJump lab Jump (read n :: Int) l)
+getJump lab [j,n,l] = (InstJump lab (read n :: Int) l)

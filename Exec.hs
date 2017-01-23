@@ -11,21 +11,21 @@ data Frame = Frame {reg :: Reg, idx :: Int}
 
 exec dict listOfInst input = runProg dict listOfInst (Frame (Reg (-1) 0) 0) input
 
-runProg dict listOfInst frame@(Frame (Reg a d) idx) [] = case com $ listOfInst !! idx of
-                   Exit -> Just d 
-                   Read -> Nothing 
-                   Jump -> if a >= 0 
-                             then runProg dict listOfInst (runJump dict (listOfInst !! idx) frame) []
-                             else Nothing
+runProg dict listOfInst frame@(Frame (Reg a d) idx) [] = case listOfInst !! idx of
+                   InstExit _ -> Just d 
+                   InstRead _ -> Nothing 
+                   InstJump _ _ _ -> if a >= 0 
+                                 then runProg dict listOfInst (runJump dict (listOfInst !! idx) frame) []
+                                 else Nothing
 
-runProg dict listOfInst frame@(Frame (Reg a d) idx) input@(curInput:xs) = case com $ listOfInst !! idx of
-                                                      Exit -> Nothing 
-                                                      Read -> if (a == -1) 
+runProg dict listOfInst frame@(Frame (Reg a d) idx) input@(curInput:xs) = case listOfInst !! idx of
+                                                      InstExit _ -> Nothing 
+                                                      InstRead _ -> if (a == -1) 
                                                                 then
                                                                   runProg dict listOfInst (Frame (Reg curInput d) $ idx + 1) xs
                                                                 else
                                                                   Nothing 
-                                                      Jump -> if a >= 0 
+                                                      InstJump _ _ _-> if a >= 0 
                                                                 then runProg dict listOfInst (runJump dict (listOfInst !! idx) frame) input
                                                                 else Nothing
 
