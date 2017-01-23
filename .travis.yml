@@ -10,5 +10,4 @@ addons:
     packages:
     - ghc-7.10.2
 install: cabal install random
-script:
-  - stack --no-terminal --skip-ghc-check ./script.sh
+script: ghc --version
