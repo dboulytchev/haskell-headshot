@@ -1,73 +1,53 @@
+import Data.List
+import qualified Data.Map as Map
 import System.Environment
-import Data.Map as M hiding (filter)
-import Data.Char
+import Data.Maybe
+import Data.List.Split
 
-data A x =  A x | Stop
-
-data M x = M {a :: A x, d :: x}
-
-data Instr = E | R  | L String | J Int String | Instr deriving Show
+data Command = E {flag :: Maybe String} |
+               R {flag :: Maybe String} |
+               J {flag :: Maybe String , num :: Int, lbl :: String}
 
 
-type Coms = Map Int Instr
-type Labels = Map String Int
-type Key = Int
---машина, поток, текущая строка, таблица команд, таблица меток
-type Context = (M Int, [Int], Key, Coms, Labels)
+makeComm :: Maybe String -> [String] -> Command
+makeComm lbl comm@(x:xs) =
+  case x of
+      "e" -> E lbl
+      "r" -> R lbl
+      "j" -> makeJump lbl comm where
+        makeJump lbl (j:n:nl) = J lbl (read n :: Int) (head nl)
 
-main = do
-	args<-getArgs
-	let fileName = head args
- 	input <- readFile fileName
-	let num = drop 1 args
-	let nums = Prelude.map(\x -> read x::Int) num
-	let i = parseJ . words $ input
-	let answer = eval (M Stop 0, nums, 1, stToMap $ i, labelsToMap $ i)
-	case answer of
-		Right d -> print d
-		Left x -> print x
-eval :: Context -> Either String Int
-eval  context@(m, nums, key, coms, labels)  = do
-					case (M.lookup key coms) of
-						Just E -> evalE m nums
-						Just R -> evalR context
-						Just j@(J num label) -> evalJ j context
-						_ -> Left$"."
+parse input = map makeCommands (map (splitOn ":") (lines input)) where
+                       makeCommands [lbl, com] = makeComm (Just lbl) (words com)
+                       makeCommands [com] = makeComm Nothing (words com)
 
-evalE :: M Int -> [Int] -> Either String Int
-evalE (M Stop d) [] = Right d
-evalE _ _ = Left $ "." 
+-- Делает словарь по лэйблам - (лэйблб, номер в списке команд)
+lbls' :: [Command] -> Map.Map String Int
+lbls' xs = Map.fromList $ makePairs xs 0 where
+  makePairs [] _       = []
+  makePairs (x:xs) num = case flag x of
+                           Just smt -> (smt, num) : (makePairs xs $ num + 1)
+                           Nothing  -> makePairs xs $ num + 1
 
-evalR :: Context -> Either String Int
-evalR (M Stop d, (x:xs), key, coms, labels) = eval (M (A x) d, xs, key + 1, coms, labels)
-evalR _ = Left $ "."
+main =
+  do
+    args <- getArgs
+    text <- readFile $ args !! 0
+    let lenArgs = length args - 1
+    let program = parse text
+    let dict = lbls' program
+    let runTheComm index a d stStat =
+          case (program !! index) of
 
-evalJ :: Instr -> Context ->  Either String Int
-evalJ j ((M Stop d), _, _, _,_) = Left $ "."
-evalJ (J n label) (M (A 0) d, nums, key, coms, labels) =
-				 eval (M Stop (n + d), nums, x + 1, coms, labels) where 
-					Just x = M.lookup label labels
-evalJ j ((M (A a) d), nums, key, coms, labels) = 
-				 eval (M (A (a - 1)) d, nums, key + 1, coms, labels) 
+            E _  | (a == Nothing && stStat > lenArgs) -> show d
+                        | otherwise -> "."
 
---сопоставим каждой команде - номер (для удобства перехода по меткам)
-stToMap :: [String] -> Map Int Instr
-stToMap prog = fromList (zip [1.. length prog] (Prelude.map stToInstr prog))
+            R _ | (a == Nothing && stStat <= lenArgs) -> runTheComm (index + 1) (Just (read $ args !! stStat :: Int)) d (stStat + 1)
+                       | otherwise -> "."
 
---отдельная map для меток
-labelsToMap :: [String] -> Map String Int
-labelsToMap prog = fromList $ filter (\(x,y) -> ':' `elem` x) (zip prog [1..length prog])
+            J _ num lst | (a == Nothing) -> "."
+                               | (fromJust a == 0) -> runTheComm (fromJust $ Map.lookup lst dict) (Nothing) (d + num)  stStat
+                               | otherwise -> runTheComm (index + 1) (Just (fromJust a - 1)) d stStat
 
-stToInstr :: String -> Instr
-stToInstr "r" = R
-stToInstr "e" = E
-stToInstr ('j':xs) = J x y where
-			xs' = words xs
-			x = read$head xs' :: Int
-			y = last xs' ++ ":"
-stToInstr label = L label
-
-parseJ :: [String] -> [String]
-parseJ (x:y:z:xs) = if (x == "j") then (x++" "++y++" "++z):(parseJ xs)
-		    else x:parseJ(y:z:xs) 
-parseJ xs = xs
+    do putStrLn (runTheComm 0 Nothing 0 1)
+       return ()
