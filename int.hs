@@ -5,7 +5,7 @@ import Executor
 main :: IO ()
 main = do
     (filename:stream) <- getArgs
-    list <- parse filename
-    exec list stream
+    (labelMap, listing) <- parse filename
+    exec labelMap listing $ map read stream
 --     print $ list
 
