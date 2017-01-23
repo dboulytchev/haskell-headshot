@@ -1,4 +1,14 @@
 language: haskell
-ghc: 7.10.2
-script: ./script.sh
+env:
+ - CABALVER=1.22 GHCVER=7.10.2
+before_install:
+  - export PATH=/opt/ghc/7.10.2/bin:$PATH
+addons:
+  apt:
+    sources:
+    - hvr-ghc
+    packages:
+    - ghc-7.10.2
+install: cabal install random
+script: PATH=/opt/ghc/7.10.2/bin:$PATH ./script.sh
 
