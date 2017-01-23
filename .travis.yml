@@ -9,6 +9,5 @@ addons:
     - hvr-ghc
     packages:
     - ghc-7.10.2
-install: cabal install random
 script: ./script.sh
 
