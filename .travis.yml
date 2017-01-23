@@ -10,6 +10,6 @@ addons:
     packages:
     - ghc-7.10.2
     - cabal-install-1.22
-install: cabal update
+install: cabal install split
 script: ghc --version && ./script.sh
 
