@@ -30,9 +30,9 @@ runProg dict listOfInst frame@(Frame (Reg a d) idx) input@(curInput:xs) = case c
                                                                 else Nothing
 
 
-runJump dict inst (Frame (Reg a d) idx) | a == 0    = (Frame (Reg (-1) (d + (fromJust $ num inst))) $ getIdx dict $ goTo inst)
+runJump dict inst (Frame (Reg a d) idx) | a == 0    = (Frame (Reg (-1) (d + (num inst))) $ getIdx dict $ goTo inst)
                                         | otherwise = (Frame (Reg (a - 1) d) $ idx + 1)
 
-getIdx dict (Just s) = fromJust $ Map.lookup s dict
+getIdx dict s = fromJust $ Map.lookup s dict
  
 
