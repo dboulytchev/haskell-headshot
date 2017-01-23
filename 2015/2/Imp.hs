@@ -15,12 +15,14 @@ type Stmt  = State -> State
 
 -- Комбинаторы выражений:
 -- литерал (целое число)
+-- lit :: Int -> ((String -> Int) -> Int)
 lit :: Int -> Expr
-lit = undefined
+lit = const
 
 -- переменная
+-- var :: String -> ((String -> Int) -> Int)
 var :: String -> Expr
-var = undefined
+var v toVal = toVal v
 
 -- бинарные операции
 infixl 3 &&& -- конъюнкция
@@ -34,37 +36,39 @@ infixl 5 -!  -- разность
 infixl 6 *!  -- произведение
 
 (&&&), (|||), (<!), (>!), (===), (=/=), (+!), (-!), (*!) :: Expr -> Expr -> Expr
+-- ((String -> Int) -> Int) -> ((String -> Int) -> Int) -> ((String -> Int) -> Int)
 
-(&&&) = undefined
-(|||) = undefined
-(<!)  = undefined
-(>!)  = undefined
-(===) = undefined
-(=/=) = undefined
-(+!)  = undefined
-(-!)  = undeifned
-(*!)  = undefined
+(e1 &&& e2) f = if e1 f /= 0 && e2 f /= 0 then 1 else 0
+(e1 ||| e2) f = if e1 f /= 0 || e2 f /= 0 then 1 else 0
+(e1 <! e2) f = if e1 f < e2 f then 1 else 0
+(e1 >! e2) f = if e1 f > e2 f then 1 else 0
+(e1 === e2) f = if e1 f == e2 f then 1 else 0
+(e1 =/= e2) f = if e1 f /= e2 f then 1 else 0
+(e1 +! e2) f = e1 f + e2 f
+(e1 -! e2) f = e1 f - e2 f
+(e1 *! e2) f = e1 f * e2 f
 
 -- Операторы
 -- присваивание
 infix 2 <:=
 
 (<:=) :: String -> Expr -> Stmt
-(<:=) = undefined
+(n <:= e) f x = if x == n then e f else f x
 
 -- последовательое исполнение
 infixr 1 !>
 
 (!>) :: Stmt -> Stmt -> Stmt
-(!>) = undefined
+s1 !> s2 = s2 . s1
 
 -- ветвление (if-then-else)
 branch :: Expr -> Stmt -> Stmt -> Stmt
-branch = undefined
+branch e s1 s2 f = if e f /= 0 then s1 f else s2 f
                   
 -- цикл с предусловием                  
 while :: Expr -> Stmt -> Stmt
-while = undefined
+while e s f = if e f /= 0 then while e s (s f) else f
+
 
 -- Примеры:
 -- выражение "a + b"
@@ -104,4 +108,14 @@ r10 = Imp.sum 4 undefined "sum"
 -- Написать вычисление факториала. Результат -- оператор и имя переменной,
 -- в которой сохраняется ответ
 fact :: Int -> (Stmt, String)
-fact = undefined
+fact n = (
+    "n" <:= lit n !>
+    "res" <:= lit 1 !>
+    "i" <:= lit 2 !>
+    branch (var "n" === lit 1) ("res" <:= lit 1) (
+    while (var "i" <! var "n" ||| var "i" === var "n") (
+            "res" <:= var "res" *! var "i" !>
+            "i" <:= var "i" +! lit 1
+        )),
+    "res"
+    )
