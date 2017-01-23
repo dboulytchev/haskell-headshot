@@ -8,11 +8,11 @@ main = do
     args <- getArgs
     let fileName  = args !! 0
     let inputData = get $ tail args
-    putStrLn fileName
-    putStrLn $ unwords $ map (show) inputData 
+    --putStrLn fileName
+    --putStrLn $ unwords $ map (show) inputData 
     let code = Parse.parse fileName
     str <- code
-    putStrLn $ textToString str
+    --putStrLn $ textToString str
     case solve Nothing 0 inputData str str of 
         Nothing  -> putStrLn "."
         (Just a) -> putStrLn $ show a
