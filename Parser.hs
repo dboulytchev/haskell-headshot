@@ -20,12 +20,6 @@ toLine s@(h:_) = if ':' `elem` h then Line{lab = init h, command = toCom (tail s
 
 
 toCom :: [String] -> Com
-toCom str = if length str == 1 
-            then case head str of 
-            	"e" -> E
-            	"r" -> R   
-            else J {numb = toInteg 0 (str !! 1), label = str !! 2}
-             
-toInteg :: Int -> String -> Int
-toInteg a [] = a
-toInteg a (x:xs) = toInteg (a * 10 + Data.Char.digitToInt x) xs              
+toCom ["e"] = E
+toCom ["r"] = R 
+toCom ("j":num:lab:[]) = J {numb = read num::Int, label = lab}
