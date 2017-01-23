@@ -13,7 +13,7 @@ type RawListing  = [CommandLine]
 type Listing     = [Command]
 
 data Label       = NoLabel | LabelPromise LabelName | Label LabelAddr deriving (Show)
-data Command     = EXIT | READ | JMP Int Label                        deriving (Show)
+data Command     = NOCOMMAND | EXIT | READ | JMP Int Label            deriving (Show)
 data CommandLine = Line Label Command                                 deriving (Show)
 
 trimSpaces :: String -> String
