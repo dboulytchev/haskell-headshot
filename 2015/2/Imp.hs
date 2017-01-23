@@ -4,7 +4,7 @@ module Imp where
 -- в Haskell (денотационный интерпретатор shallow-DSL)
 
 -- Состояние отображает имена переменных в целые числа
-type State = String -> Int
+type State = String -> Int 
 
 -- Выражение --- это функция, которая по состоянию возвращает
 -- значение этого выражения
@@ -16,11 +16,11 @@ type Stmt  = State -> State
 -- Комбинаторы выражений:
 -- литерал (целое число)
 lit :: Int -> Expr
-lit = undefined
+lit n = (\_ -> n)
 
 -- переменная
 var :: String -> Expr
-var = undefined
+var x = (\f -> f x)
 
 -- бинарные операции
 infixl 3 &&& -- конъюнкция
@@ -35,37 +35,40 @@ infixl 6 *!  -- произведение
 
 (&&&), (|||), (<!), (>!), (===), (=/=), (+!), (-!), (*!) :: Expr -> Expr -> Expr
 
-(&&&) = undefined
-(|||) = undefined
-(<!)  = undefined
-(>!)  = undefined
-(===) = undefined
-(=/=) = undefined
-(+!)  = undefined
-(-!)  = undeifned
-(*!)  = undefined
+(&&&) a b = (*) <$> a <*> b
+(|||) a b = (+) <$> a <*> b
+(<!)  a b = (toBool (<)) <$> a <*> b
+(>!)  a b = (toBool (>)) <$> a <*> b
+(===) a b = (toBool (==)) <$> a <*> b
+(=/=) a b = (toBool (/=)) <$> a <*> b
+(+!)  a b = (+) <$> a <*> b
+(-!)  a b = (-) <$> a <*> b
+(*!)  a b = (*) <$> a <*> b
+
+toBool f x y = if f x y then 1 else 0
 
 -- Операторы
 -- присваивание
 infix 2 <:=
-
 (<:=) :: String -> Expr -> Stmt
-(<:=) = undefined
+(<:=) str expr f = (\x -> if x == str then expr f else f x)
 
 -- последовательое исполнение
 infixr 1 !>
-
 (!>) :: Stmt -> Stmt -> Stmt
-(!>) = undefined
+(!>) a b = b.a
 
 -- ветвление (if-then-else)
 branch :: Expr -> Stmt -> Stmt -> Stmt
-branch = undefined
+branch expr s1 s2 = (\f -> if (expr f /= 0) then s1 f else s2 f)
                   
 -- цикл с предусловием                  
 while :: Expr -> Stmt -> Stmt
-while = undefined
-
+while expr s = pool expr s s where
+    pool expr s1 s2 f = 
+         if (expr f == 0) then s2 f
+         else pool (\x -> expr $ s1 x) s1 (s2 . s1) f 
+   		   
 -- Примеры:
 -- выражение "a + b"
 a_plus_b :: Expr
@@ -104,4 +107,10 @@ r10 = Imp.sum 4 undefined "sum"
 -- Написать вычисление факториала. Результат -- оператор и имя переменной,
 -- в которой сохраняется ответ
 fact :: Int -> (Stmt, String)
-fact = undefined
+fact n = (f n, "ans") where
+     f n = 
+         "ans" <:= lit 1 !>
+         "i" <:= lit 1 !>
+         while (var "i" <! lit n)
+             ("ans" <:= var "ans" *! var "i" !>
+              "i" <:= var "i" +! lit 1) 
