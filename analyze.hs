@@ -12,7 +12,7 @@ data Ans = Ans(Int, [Int]) deriving (Eq)
 instance Ord Ans where
 	Ans x <= Ans y = fst x <= fst y
 instance Show Ans where
-	show (Ans x) = "(" ++ show (fst x) ++ ", " ++ show (snd x) ++ ")"
+	show (Ans x) = "(" ++ show (fst x) ++ "," ++ show (snd x) ++ ")"
 
 parse :: String -> [Instr]
 parse x = map parse2 $ filter (not.null) $ map (\j -> filter (/= "") j) $ map (splitOneOf " :\t") (splitOn "\n" x)
