@@ -34,7 +34,7 @@ startExec lines stream  =  execLine (Just(0, (Step, 0), stream))
             
 result :: Programm -> [String] -> IO()                            
 result l s = do 
-    case startExec l (map (toInteg  0) s) of 
+    case startExec l (map (\n -> read n::Int) s) of 
       Just(_,a,_) -> (putStrLn $ show $ snd a)
       otherwise -> putStrLn "."
     return()
