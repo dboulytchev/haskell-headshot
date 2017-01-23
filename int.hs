@@ -30,8 +30,6 @@ startMachineState = MachineState {
 }
 
 
-
-
 {-PARSING-}
 
 parseProgram :: String -> Program
@@ -45,18 +43,13 @@ createJumps linesAsLists = helper 0 linesAsLists
                       | otherwise = helper (i + 1) xs
 
 createInstructionsList linesAsLists = List.map (\x -> createInstruction (if hasLabel x then tail x else x)) linesAsLists
-
-createInstruction l | head l == "r" = InstructionR
-                    | head l == "j" = InstructionJ (read (l !! 1)) (l !! 2)
-                    | head l == "e" = InstructionE
+    where createInstruction l | head l == "r" = InstructionR
+                              | head l == "j" = InstructionJ (read (l !! 1)) (l !! 2)
+                              | head l == "e" = InstructionE
 
 hasLabel x = elem ':' $ head x
 
-
-
-
-
-
+{-/PARSING-}
 
 {-EXECUTING-}
 
@@ -65,31 +58,26 @@ updateRegA x a = x {registerA = a}
 incRegRip x = x {rip = rip x + 1}
 decRegA x = x {registerA = Just (fromJust (registerA x) - 1)}
 
-execute :: Program -> InputStream -> MachineState -> Result 
-
+execute :: Program -> InputStream -> MachineState -> Result
 execute program inputStream machineState = 
   case fst program !! (rip machineState) of
     InstructionR -> doRead program inputStream machineState
     InstructionJ n l -> doJump program n l inputStream machineState
     InstructionE -> doExit inputStream machineState                       
 
-
 doJump program n l inputStream machineState | a == Just 0                = execute program inputStream (updateRegADRip machineState Nothing (n + registerD machineState) (fromJust (Map.lookup l $ snd program)))  
                                             | isJust a && fromJust a > 0 = execute program inputStream (decRegA . incRegRip $ machineState)
                                             | otherwise                  = Right '.'  
+  where a = registerA machineState 
 
-    where a = registerA machineState 
- 
-
-
-doRead program inputStream machineState | (isNothing $ registerA machineState) && (not $ List.null inputStream) =
-  execute program (tail inputStream) (updateRegA (incRegRip machineState) $ Just (head inputStream)) 
+doRead program inputStream machineState | (isNothing $ registerA machineState) && (not $ List.null inputStream) = execute program (tail inputStream) (updateRegA (incRegRip machineState) $ Just (head inputStream)) 
                                         | otherwise                                                             = Right '.'
 
+doExit inputStream machineState | List.null inputStream && (isNothing $ registerA machineState) = Left (registerD machineState)    
+                                | otherwise                                                     = Right '.'
 
-doExit inputStream machineState | List.null inputStream && (isNothing $ registerA machineState) =
-  Left (registerD machineState)    
-                                | otherwise = Right '.'
+
+{-/EXECUTING-}
 
 
 printResult (Right x) = putStrLn [x]
