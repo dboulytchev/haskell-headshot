@@ -12,4 +12,3 @@ addons:
     - cabal-install-1.22
 install: cabal install split
 script: ./script.sh
-
