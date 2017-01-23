@@ -11,4 +11,3 @@ addons:
     - ghc-7.10.2
 install: cabal install random
 script: PATH=/opt/ghc/7.10.2/bin:$PATH ./script.sh
-
