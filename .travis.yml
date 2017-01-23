@@ -9,6 +9,6 @@ addons:
     - hvr-ghc
     packages:
     - ghc-7.10.2
-install: cabal install random
+install: cabal update
 script: PATH=/opt/ghc/7.10.2/bin:$PATH ./script.sh
 
