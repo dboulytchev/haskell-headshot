@@ -46,7 +46,7 @@ parseInput prog = makeListOfCommands $ lines prog where
 
 
 data Execution = Finished String |
-                 ReadStream {regA::RegA, regD::RegD} |
+                 ReadStream {regD::RegD} |
                  Jump {regAj :: RegA, regDj :: RegD, lbl :: Maybe String}
 
 -- выполянет одну команду программы
@@ -55,16 +55,16 @@ execComm comm curRega curRegd numStr maxStr =
      case com comm of
           E | (valA curRega == (-1) && numStr > maxStr)
                   -> Finished $ show $ valD curRegd
-              | otherwise -> Finished "."
+            | otherwise -> Finished "."
 
           R | (valA curRega == (-1) && numStr <= maxStr)
-                  ->ReadStream curRega curRegd
-              | otherwise ->  Finished "."
+                  ->ReadStream curRegd
+            | otherwise ->  Finished "."
 
           J | (valA curRega == (-1)) -> Finished "."
-              | (valA curRega == 0)
+            | (valA curRega == 0)
                   -> Jump (RegA (-1)) (RegD (valD curRegd +  fromJust ( number comm))) (flagToGo comm )
-              | otherwise -> Jump (RegA (valA curRega - 1)) curRegd Nothing
+            | otherwise -> Jump (RegA (valA curRega - 1)) curRegd Nothing
 
 
 -- Делает словарь по лэйблам - (лэйблб, номер в списке команд)
@@ -85,7 +85,7 @@ main =
     let runTheComm numCom curRegA curRegD stStat =
           case execComm (program !! numCom) curRegA curRegD stStat lenArgs of
                        Finished x                     -> x
-                       ReadStream _ d                 ->
+                       ReadStream d                   ->
                           runTheComm (numCom + 1) (RegA (read $ args !! stStat :: Int)) d (stStat + 1)
                        Jump (RegA (-1)) d (Just lst)  ->
                           runTheComm (fromJust $ Map.lookup lst dict) (RegA (-1)) d stStat
