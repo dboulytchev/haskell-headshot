@@ -8,3 +8,4 @@ main = do
     list <- parse filename
     exec list stream
 --     print $ list
+
