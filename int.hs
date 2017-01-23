@@ -39,8 +39,7 @@ execute (J x y) c i 0 d = (execute r (rs ++ [J x y] ++ c) i (-1) (d + x)) where
 execute (J x y) (c:cs) i a d = execute c (cs ++ [J x y]) i (a - 1) d
 
 main :: IO ()
-main = do input <- getArgs --input <- readLn
-          --let (file_name : stream) = split ' ' input
+main = do input <- getArgs
           file <- readFile (head input)
           let programm = parse <$> (split '\n' file)
           execute (head programm) (tail programm) (strToInt <$> (tail input)) (-1) 0
