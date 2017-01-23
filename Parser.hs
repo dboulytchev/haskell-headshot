@@ -25,13 +25,12 @@ preprocess line = case splitOn ":" $ trimSpaces line of
 
 text2ast :: [String] -> (LabelMap, [Command])
 text2ast codeList = let
-        fixLabels :: [Maybe Label] -> [Command] -> LabelMap -> [Command] -> (LabelMap, [Command])
-        fixLabels [] [] labelMap out = (labelMap, reverse out)
-        fixLabels (Nothing:xs)      (command:ys) labelMap out = fixLabels xs ys labelMap $ command : out
-        fixLabels (Just label:xs) y@(command:ys) labelMap out = fixLabels xs ys (Map.insert label y labelMap) $ command : out
+        fixLabels []              []           labelMap = labelMap
+        fixLabels (Nothing:ls)    (_:cs)       labelMap = fixLabels ls cs labelMap
+        fixLabels (Just label:ls) comms@(c:cs) labelMap = fixLabels ls cs (Map.insert label comms labelMap)
 
         (labels, commands) = unzip $ map preprocess codeList
-    in fixLabels labels commands Map.empty []
+    in (fixLabels labels commands Map.empty, commands)
 
 parse :: String -> IO (LabelMap, [Command])
 parse filename = do
