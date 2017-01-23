@@ -11,5 +11,5 @@ addons:
     - ghc-7.10.2
     - cabal-install-1.22
 install: cabal install split
-script: ghc --version && ./script.sh
+script: ./script.sh
 
