@@ -2,6 +2,7 @@
 import Data.List.Split
 import System.Environment
 
+data my = O | S my
 data Flag = No_Flag | MkFlag String deriving (Eq, Show)
 data Instr = E Flag | R Flag | J Flag Int Flag deriving (Show, Eq)
 data A = NotInt | A Int deriving Eq
