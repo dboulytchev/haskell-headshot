@@ -20,14 +20,14 @@ startExec lines stream  =  execLine (Just(0, (Step, 0), stream))
                             labList = [lab l | l <- lines]  
                             execLine :: Maybe (Int, Regs, [Int]) -> Maybe (Int, Regs, [Int])
                             execLine Nothing = Nothing
-                            execLine (Just (n, (a, d), str)) = do                                                         
-                                                              case command (allProg !! n) of
-                                                                E -> if a == Step && null str then Just (-1, (a,d), str) else Nothing
-                                                                R -> if a == Step && not (null str) then execLine (Just(n+1, (RegA (head str), d), tail str)) else Nothing
+                            execLine (Just (numOfLine, (a, d), str)) = do                                                         
+                                                              case command (allProg !! numOfLine) of
+                                                                E -> if a == Step && null str then Just (0, (a,d), str) else Nothing
+                                                                R -> if a == Step && not (null str) then execLine (Just(numOfLine+1, (RegA (head str), d), tail str)) else Nothing
                                                                 J n ln -> if getA a == 0 then case (ln `elemIndex` labList) of 
                                                                                                     Just lbl -> execLine (Just (lbl, (Step, d + n), str))
                             
-                                                                     else if getA a > 0 then execLine (Just(n+1, (RegA (getA a - 1), d), str)) else Nothing
+                                                                     else if getA a > 0 then execLine (Just(numOfLine+1, (RegA (getA a - 1), d), str)) else Nothing
 
 
 
