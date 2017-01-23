@@ -1,1 +1,2 @@
-main = undefined
+import Main
+main = main
