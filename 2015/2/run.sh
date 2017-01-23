@@ -14,8 +14,3 @@ check
 ./EqClassesTest
 check
 
-ghc ImpTest.hs
-check
-
-./ImpTest
-check
