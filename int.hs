@@ -1,12 +1,7 @@
 import Data.List
 import Data.Char
-import Data.Monoid
-import Data.Functor
 import Control.Monad
-import System.Directory
-import Control.Monad.Reader
 import System.IO
-import System.IO.Unsafe
 import System.Environment
 import qualified Data.Map as Map
 
