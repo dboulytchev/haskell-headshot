@@ -1,3 +1,10 @@
-import Data.List.Split
+import System.Environment (getArgs)
+import Parser
+import Executor
 
-main = undefined
+main :: IO ()
+main = do
+    (filename:stream) <- getArgs
+    list <- parse filename
+    exec list stream
+--     print $ list
