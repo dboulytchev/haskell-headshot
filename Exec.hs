@@ -20,7 +20,7 @@ runProg dict listOfInst frame@(Frame (Reg a d) idx) [] = case com $ listOfInst !
 
 runProg dict listOfInst frame@(Frame (Reg a d) idx) input@(curInput:xs) = case com $ listOfInst !! idx of
                                                       Exit -> Nothing 
-                                                      Read -> if (a == -1 && input /= []) 
+                                                      Read -> if (a == -1) 
                                                                 then
                                                                   runProg dict listOfInst (Frame (Reg curInput d) $ idx + 1) xs
                                                                 else
@@ -33,6 +33,6 @@ runProg dict listOfInst frame@(Frame (Reg a d) idx) input@(curInput:xs) = case c
 runJump dict inst (Frame (Reg a d) idx) | a == 0    = (Frame (Reg (-1) (d + (fromJust $ num inst))) $ getIdx dict $ goTo inst)
                                         | otherwise = (Frame (Reg (a - 1) d) $ idx + 1)
 
-getIdx dict (Just s) = case Map.lookup s dict of
-                       Just num -> num
+getIdx dict (Just s) = fromJust $ Map.lookup s dict
+ 
 

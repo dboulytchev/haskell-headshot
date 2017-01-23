@@ -13,14 +13,14 @@ makeListOfInst (s:xs) = (getInst $ words s) : makeListOfInst xs
 
 
 getInst inst@(l : xs) = case isLable l of
-                   (Just a) -> getCom (Just a) xs
+                   Just a   -> getCom (Just a) xs
                    Nothing  -> getCom Nothing inst
 
 isLable s | last s == ':' = Just $ init s
           | otherwise     = Nothing
 
-getCom lab inst@(c : xs) | c == "e"  = (Inst lab Exit  Nothing Nothing)
+getCom lab inst@(c : xs) | c == "e"  = (Inst lab Exit Nothing Nothing)
                          | c == "r"  = (Inst lab Read Nothing Nothing)
                          | otherwise = getJump lab inst
 
-getJump lab (j:n:l) = (Inst lab Jump (Just (read n :: Int)) (Just $ head l))
+getJump lab [j,n,l] = (Inst lab Jump (Just (read n :: Int)) (Just l))
