@@ -2,25 +2,15 @@ import Data.List
 import qualified Data.Map as Map
 import System.Environment
 import Data.Maybe
+import Data.List.Split
 
 -- Команда в программе
 data Command = CommandE {flag :: Maybe String} |
                CommandR {flag :: Maybe String} |
                CommandJ {flag :: Maybe String , number :: Int, flagToGo :: String}
 
--- Список команд
-type Instructions = [Command]
-type ProgramText = [String]
-
--- Делает команду из строки входного файла
-getCommand :: ProgramText -> Command
-getCommand comm@(x:xs) = let isFlag s = if (last s == ':') then Just $ init s else Nothing in
-                             case isFlag x of
-                               (Just lbl) -> makeComm (Just lbl) xs
-                               Nothing    -> makeComm Nothing comm
-
 -- Делает из строки и флага в начале  команду
-makeComm :: Maybe String -> ProgramText -> Command
+makeComm :: Maybe String -> [String] -> Command
 makeComm lbl comm@(x:xs) =
   case x of
       "e" -> CommandE lbl
@@ -28,15 +18,12 @@ makeComm lbl comm@(x:xs) =
       "j" -> makeJump lbl comm where
         makeJump lbl (j:n:nl) = CommandJ lbl (read n :: Int) (head nl)
 
-
--- Парсит входную программу на команды
-parseInput :: String -> Instructions
-parseInput prog = makeListOfCommands $ lines prog where
-     makeListOfCommands prog = foldr (\ x xs -> (getCommand $ words x) : xs) [] prog
-
+parse input = map makeCommands (map (splitOn ":") (lines input)) where
+                       makeCommands [lbl, com] = makeComm (Just lbl) (words com)
+                       makeCommands [com] = makeComm Nothing (words com)
 
 -- Делает словарь по лэйблам - (лэйблб, номер в списке команд)
-makeDictOfLabels :: Instructions -> Map.Map String Int
+makeDictOfLabels :: [Command] -> Map.Map String Int
 makeDictOfLabels xs = Map.fromList $ makePairs xs 0 where
   makePairs [] _       = []
   makePairs (x:xs) num = case flag x of
@@ -48,10 +35,10 @@ main =
     args <- getArgs
     text <- readFile $ args !! 0
     let lenArgs = length args - 1
-    let program = parseInput text
+    let program = parse text
     let dict = makeDictOfLabels program
     let runTheComm numCom curRegA curRegD stStat =
-          case (program !! numCom)of
+          case (program !! numCom) of
 
             CommandE _  | (curRegA == Nothing && stStat > lenArgs) -> show curRegD
                         | otherwise -> "."
