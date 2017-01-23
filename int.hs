@@ -3,54 +3,42 @@ import Data.List.Split
 import System.Environment
 
 data Flag = No_Flag | MkFlag String deriving (Eq, Show)
-data Instr = Instr {flag :: Flag, cmd :: String, val :: Int, flagTo :: Flag} deriving Show
+data Instr = E Flag | R Flag | J Flag Int Flag deriving (Show, Eq)
 data A = NotInt | A Int deriving Eq
-data Answer = Ans Int | Alarm
-instance Show Answer where
-	show Alarm = "."
-	show (Ans x) = show x
-
-infixl 1 &
-(&) :: a -> (a -> b) -> b
-x & f = f x
-
-my_read :: String -> Int
-my_read x = read x :: Int
+instance Show A where
+	show NotInt = "."
+	show (A x) = show x
 
 parse :: String -> [Instr]
 parse x = map parse2 $ filter (not.null) $ map (\j -> filter (/= "") j) $ map (splitOneOf " :\t") (splitOn "\n" x)
 
 parse2:: [String] -> Instr
-parse2 x = case x of 
-					 (a : [])             -> Instr {flag = No_Flag, cmd = a}
-				 	 (a : b : [])         -> Instr {flag = MkFlag a, cmd = b}
-			 		 (a : b : c : [])     -> Instr {flag = No_Flag, cmd = a, val = (read b :: Int), flagTo = MkFlag c}
-		 			 (a : b : c : d : []) -> Instr {flag = MkFlag a, cmd = b, val = (read c :: Int), flagTo = MkFlag d}
-		 			 [] 				  -> error "Wrong Instruction"
+parse2 x = case x of
+			   (a : []) 			-> if (a == "e") then E No_Flag else R No_Flag
+			   (a : b : []) 		-> if (b == "e") then E $ MkFlag a else R $ MkFlag a
+			   (a : b : c : []) 	-> J No_Flag (read b) $ MkFlag c
+			   (a : b : c : d : []) -> J (MkFlag a) (read c) $ MkFlag d
 
 findByFlag :: Flag -> [Instr] -> [Instr]
-findByFlag f [] = error "No command with this flag"
-findByFlag f (s : sp) | (s & flag) == f = (s : sp)
-					  | otherwise = findByFlag f sp
+findByFlag f (s : sp) = if helper f s then (s : sp) else findByFlag f sp where
+						   helper g (E x) = x == g
+						   helper g (R x) = x == g
+						   helper g (J x _ _) = x == g
 
-iter :: [Instr] -> [Instr] -> A -> Int -> [Int] -> Answer
-iter [] _ _ _ _ = Alarm
 
-iter sp (x : xs) NotInt b arg| (x & cmd) == "e" = if (null arg) then Ans b
-																else Alarm
-						  	 | (x & cmd) == "r" = if (null arg) then Alarm
-						  	 									else iter sp xs (A $ head arg) b (tail arg)
-						  	 | otherwise = Alarm
-
-iter sp (x : xs) (A a) b arg| (x & cmd) == "e" = Alarm
-				  		 	| (x & cmd) == "r" = Alarm
-				  		 	| (x & cmd) == "j" = if a == 0 then iter sp (findByFlag (x & flagTo) sp) NotInt (b + (x & val)) arg
-				  								   		   else iter sp xs (A $ pred a) b arg
+iter :: [Instr] -> [Instr] -> A -> Int -> [Int] -> A
+iter sp (x : xs) NotInt b arg = case x of
+										 (E f) -> if (null arg) then A b
+										 					  else NotInt
+										 (R f) -> if (null arg) then NotInt
+										 					  else iter sp xs (A $ head arg) b (tail arg)
+										 u 	 -> NotInt
+iter sp (x : xs) (A a) b arg = case x of
+										 (E f) 	-> NotInt
+										 (R f) 	-> NotInt
+										 (J f nb toF)	-> if (a == 0) then iter sp (findByFlag toF sp) NotInt (b + nb) arg
+										 						   else iter sp xs (A $ pred a) b arg
 main = do
 	args <- getArgs
 	instrs <- readFile $ head args
-	print(iter (parse instrs) (parse instrs) NotInt 0 (map my_read (tail args)))
-
-
-
-
+	let instL = parse instrs in print(iter instL instL NotInt 0 (map read (tail args))) 
