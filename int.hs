@@ -2,6 +2,8 @@
 module Main where
 import Data.List
 import Data.Char
+import System.Environment
+import System.IO
 
 data Command a = J a a | R a | E a deriving Show -- ?
 
@@ -36,8 +38,10 @@ execute (J x y) c i 0 d = (execute r (rs ++ [J x y] ++ c) i (-1) (d + x)) where
                                                               (r, rs) = drop_until c y
 execute (J x y) (c:cs) i a d = execute c (cs ++ [J x y]) i (a - 1) d
 
-main = do input <- readLn
-          let (file_name : stream) = split ' ' input
-          file <- readFile file_name
+main :: IO ()
+main = do input <- getArgs --input <- readLn
+          --let (file_name : stream) = split ' ' input
+          file <- readFile (head input)
           let programm = parse <$> (split '\n' file)
-          execute (head programm) (tail programm) (strToInt <$> stream) (-1) 0
+          execute (head programm) (tail programm) (strToInt <$> (tail input)) (-1) 0
+          return ()
