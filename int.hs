@@ -1,6 +1,5 @@
 import System.IO  
-import System.Environment   
-import Data.List.Split    
+import System.Environment 
 
 -- data: 
 
@@ -12,7 +11,11 @@ data State a d m1 i1 s1 m2 i2 s2 args = State {getA :: Maybe a, getD :: d, curCo
 
 -- parsing input:
 
-parseCommand xs = let s = filter (/= []) (splitOn " " xs) in case s of
+splitOn s xs = helper s xs [] where
+	helper s [] acc = [acc]
+	helper s (x:xs) acc = if x == s then acc : helper s xs [] else helper s xs (acc ++ [x])
+	
+parseCommand xs = let s = filter (/= []) (splitOn ' ' xs) in case s of
 	["r"] -> R
 	["e"] -> E
 	x -> J (read (x !! 1) :: Int) (x !! 2)
@@ -21,7 +24,7 @@ toLine (x:y:[]) = Line {mark = Just x, cmd = parseCommand y}
 toLine (x:[])   = Line {mark = Nothing, cmd = parseCommand x}
 	
 parseLines []     = []
-parseLines (x:xs) = let p = splitOn ":" x in toLine p : parseLines xs
+parseLines (x:xs) = let p = splitOn ':' x in toLine p : parseLines xs
 
 tabToSpace x = if x == '\t' then ' ' else x
 parse xs = parseLines (lines (map tabToSpace xs)) 
@@ -43,6 +46,7 @@ eval state = evalCurCommand (cmd (head (curCommands state))) where
 		evalJ (Just 0) = let newState = state {getA = Nothing, getD = (getD state) + i, curCommands = findMark s (allCommands state)} in eval newState
 		evalJ (Just x) = let newState = state {getA = Just (x - 1), curCommands = tail (curCommands state)} in eval newState
 		evalJ Nothing  = Nothing
+		
 -- end evaluation
 
 -- additional functions:  
