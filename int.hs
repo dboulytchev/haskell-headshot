@@ -1,34 +1,47 @@
 module Main where
 
-import System.Environment
+import System.IO  
+import System.Environment 
 import Data.List
-import Data.Map as Map
-import Data.Maybe
-import Parser
 
 
-execute :: Stat -> [Instruction] -> Input -> LabelsMap ->  ExitCode
-execute (Stat a d ip) program input labelsMap | curInsrtuction == Exit && a == Nothing && (length input) == 0  = Just d   
-                                              | curInsrtuction == Read' && a == Nothing && (length input) /= 0 = execute (Stat (Just (head input)) d (ip + 1)) program (tail input) labelsMap
-                                              | curInsrtuction == Jump && valA == 0                            = execute (Stat Nothing (n + d) lineLabel) program input labelsMap
-                                              | curInsrtuction == Jump && valA > 0                             = execute (Stat (Just (valA - 1)) d (ip + 1)) program input labelsMap
-                                              | otherwise                                                      = Nothing
-                                              where
-                                                (ArgsType (n, l)) = args (program !! ip)
-                                                (Just lineLabel) = Map.lookup l labelsMap
-                                                (Just valA) = a
-                                                curInsrtuction = instruction (program !! ip)
-                                               
-main = do
-   args <- getArgs
-   fileContent <- readFile (args !! 0)
-   let linesOfFile = lines fileContent 
-   
-   let labelsMap = fromList $ (getListOfJumps linesOfFile 0)
-   let program = parseSouce linesOfFile
-   let input = stringToInt(tail args)
+data Command n label = Exit | Read | Jump n label deriving (Show, Eq)
 
-   let res = case execute (Stat Nothing 0 0) program input labelsMap of
-                 (Just a) -> show a
-                 (Nothing) -> "."
-   putStrLn res
+
+parse' :: String -> (Maybe String, Command Int String)
+parse' line = parseStr (words line) where
+  parseStr :: [String] -> (Maybe String, Command Int String) 
+  parseStr [lbl , "e"]  = (Just (init lbl),  Exit)
+  parseStr [lbl , "r"]  = (Just (init lbl),  Read)
+  parseStr [lbl ,"j", n, label] = (Just lbl,  (Jump (read n :: Int) label)) 
+  parseStr ["e"]  = (Nothing, Exit)
+  parseStr ["r"]  = (Nothing, Read)
+  parseStr ["j", n, label] = (Nothing, (Jump (read n :: Int) label ))
+
+findPos :: String -> [(Maybe String, Command Int String)] -> [Command Int String]
+findPos start list @ ((label, c) : tailLst) | label == Just start = fmap snd list 
+                                            | otherwise = findPos start tailLst
+findPos _ list = fmap snd list
+      
+execute :: Maybe Int -> Int -> [Int] -> [Command Int String] -> [(Maybe String, Command Int String)] -> Maybe Int   
+execute (Just 0) d input     ((Jump i l) : com) allCmd = execute Nothing (d + i) input (findPos l allCmd) allCmd
+execute (Just a) d input     ((Jump i l) : com) allCmd = execute (Just (a - 1)) d input com allCmd      
+execute Nothing  d (i:input) (Read : com)       allCmd = execute (Just i) d input com allCmd
+execute Nothing  d []        (Exit : _)         _ = Just d 
+execute _        _ _          _            _ = Nothing
+                
+parseList :: [String] -> [(Maybe String, Command Int String)]
+parseList [] = []
+parseList (x:xs) = parse' x : parseList (xs)
+
+
+printAns Nothing  = "."
+printAns (Just x) = show x
+
+main = do 
+      args <- getArgs
+      fileContent <- readFile (args !! 0)
+      let input = map (\x -> read x :: Int) (tail args)
+      let program = parseList (lines fileContent)
+      let answer = (execute Nothing 0 input (fmap snd program) program) 
+      putStrLn (printAns answer)
