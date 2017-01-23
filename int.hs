@@ -9,17 +9,19 @@ data Result = Result Int | Interrupted
 
 instance Show Result where
     show (Result x) = show x
-    show _ = "."
+    show Interrupted = "."
 
 aToInt (Just x) = x
+aToInt Nothing = -1
+
 fromStringToCommand :: [String] -> Command        
-fromStringToCommand (x:(y:ys)) = case x of
-    "j" -> J (read y) (concat ys)
+fromStringToCommand (x:xs) = case x of
+    "j" -> J (read (head xs)) (concat (tail xs))
     "r" -> R
     "e" -> E
 
 fromStringToLine xs = Line { flag    = if null y then NoFlag else F x, 
-                             command = if null y then fromStringToCommand . words $ x else fromStringToCommand . words . tail $ y }
+                             command = if null y then fromStringToCommand (words x) else fromStringToCommand (words . tail $ y) }
     where (x,y) = span (/= ':') xs
 
 seek [] y = []
@@ -41,6 +43,8 @@ run lns (cur:next) stream a d = case command cur of
         where jumpHelper n l a d | a == Just 0 = run lns (seek lns l) stream Nothing (d + n)
                                  | a > Just 0 = run lns next stream (Just $ aToInt a - 1) d
                                  | otherwise = Interrupted
+
+
 main = do
     args <- getArgs
     prog <- readFile (head args)
