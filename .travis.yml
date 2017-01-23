@@ -9,6 +9,7 @@ addons:
     - hvr-ghc
     packages:
     - ghc-7.10.2
-install: cabal update
+    - cabal-install-1.22
+install: cabal install split
 script: ./script.sh
 
