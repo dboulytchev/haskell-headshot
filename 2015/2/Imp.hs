@@ -16,11 +16,11 @@ type Stmt  = State -> State
 -- Комбинаторы выражений:
 -- литерал (целое число)
 lit :: Int -> Expr
-lit = undefined
+lit x = (\_ -> x)
 
 -- переменная
 var :: String -> Expr
-var = undefined
+var a = (\f -> f a) 
 
 -- бинарные операции
 infixl 3 &&& -- конъюнкция
@@ -35,36 +35,38 @@ infixl 6 *!  -- произведение
 
 (&&&), (|||), (<!), (>!), (===), (=/=), (+!), (-!), (*!) :: Expr -> Expr -> Expr
 
-(&&&) = undefined
-(|||) = undefined
-(<!)  = undefined
-(>!)  = undefined
-(===) = undefined
-(=/=) = undefined
-(+!)  = undefined
-(-!)  = undeifned
-(*!)  = undefined
+(&&&) a b = (\f -> if (a f == 0 || b f == 0) then 0 else 1)
+(|||) a b = (\f -> if (a f == 0 && b f == 0) then 0 else 1)
+(<!)  a b = (\f -> if (a f < b f) then 1 else 0)
+(>!)  a b = (\f -> if (a f > b f) then 1 else 0)
+(===) a b = (\f -> if (a f == b f) then 1 else 0)
+(=/=) a b = (\f -> if (a f /= b f) then 1 else 0)
+(+!)  a b = (\f -> a f + b f)
+(-!)  a b = (\f -> a f - b f)
+(*!)  a b = (\f -> a f * b f)
 
 -- Операторы
 -- присваивание
 infix 2 <:=
 
 (<:=) :: String -> Expr -> Stmt
-(<:=) = undefined
+(<:=) a b = (\f x -> if (x == a) then b f else f x)
 
 -- последовательое исполнение
 infixr 1 !>
 
 (!>) :: Stmt -> Stmt -> Stmt
-(!>) = undefined
+(!>) a b = (\f -> b ( a f))
 
 -- ветвление (if-then-else)
 branch :: Expr -> Stmt -> Stmt -> Stmt
-branch = undefined
+branch a b c = (\f -> if ((a f) /= 0) then b f
+                                    else c f)
                   
 -- цикл с предусловием                  
 while :: Expr -> Stmt -> Stmt
-while = undefined
+while a b = (\f -> if ((a f) == 0) then f
+                                   else while a b (b f))
 
 -- Примеры:
 -- выражение "a + b"
@@ -104,4 +106,10 @@ r10 = Imp.sum 4 undefined "sum"
 -- Написать вычисление факториала. Результат -- оператор и имя переменной,
 -- в которой сохраняется ответ
 fact :: Int -> (Stmt, String)
-fact = undefined
+fact n = (Imp.fact' n, "res")
+fact' n =
+    "res" <:= lit 1 !>
+	"i"    <:= lit n !>
+	while (lit 0 <! var "i")
+	       ("res" <:= var "res" *! var "i" !>
+		   "i"    <:= var "i"    -! lit 1)
